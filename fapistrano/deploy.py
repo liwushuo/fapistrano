@@ -54,7 +54,7 @@ def delta(upstream='upstream', bsd=True):
 
 
 @task
-def _restart(refresh_supervisor=False, wait_before_refreshing=False):
+def restart(refresh_supervisor=False, wait_before_refreshing=False):
     if not refresh_supervisor:
         run('supervisorctl restart %(project_name)s' % env)
     else:
@@ -193,7 +193,7 @@ def link_release():
 
     with cd(env.path):
         run('ln -nfs %(releases_path)s/%(new_release)s current' % env)
-    _restart()
+    restart()
     cleanup()
 
 
@@ -210,5 +210,5 @@ def rollback():
 
     with cd(env.path):
         run('ln -nfs %(releases_path)s/%(rollback_to)s current' % env)
-        _restart()
+        restart()
         run('rm -rf %(releases_path)s/%(rollback_from)s' % env)
