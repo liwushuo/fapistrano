@@ -130,8 +130,9 @@ def setup(branch=None):
         print green('-----> '), 'Checking out %(branch)s branch' % env
         run('git checkout %(branch)s' % env)
 
-        print green('-----> '), 'Setting up repo'
-        first_setup_repo_func()
+        if callable(first_setup_repo_func):
+            print green('-----> '), 'Setting up repo'
+            first_setup_repo_func()
 
     # symlink
     with cd(env.path):
@@ -167,9 +168,10 @@ def prepare_release(branch=None):
             run('git fetch -q')
             run('git reset --hard origin/%(branch)s' % env)
 
-            # setup repo
-            print green('-----> '), 'Setting up repo'
-            setup_repo_func()
+            if callable(setup_repo_func):
+                # setup repo
+                print green('-----> '), 'Setting up repo'
+                setup_repo_func()
 
     except SystemExit:
         print red('-----> '), 'New release failed to deploy'
