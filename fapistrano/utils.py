@@ -3,6 +3,16 @@
 from functools import wraps
 
 from fabric.api import env
+from fabric.colors import green, red, white
+
+
+def red_alert(msg, bold=True):
+    print red('===>', bold=bold), white(msg, bold=bold)
+
+
+def green_alert(msg, bold=True):
+    print green('===>', bold=bold), white(msg, bold=bold)
+
 
 
 def _apply_env_role_config():
