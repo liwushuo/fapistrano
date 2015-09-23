@@ -13,12 +13,16 @@ from fabric.api import prefix
 from fabric.api import task
 from fabric.api import abort
 from fabric.api import parallel
-from fabric.colors import green
-from fabric.colors import red
+from fabric.api import show
+from fabric.colors import green, red, white
+from fabric.state import output
+
+from .utils import red_alert, green_alert
 
 RELEASE_PATH_FORMAT = '%y%m%d-%H%M%S'
 
-
+# do not print output by default
+output.output = False
 first_setup_repo_func = None
 setup_repo_func = None
 
@@ -32,13 +36,6 @@ def setup_repo(f):
     global setup_repo_func
     setup_repo_func = f
     return f
-
-
-@task
-@runs_once
-def debug_env():
-    from pprint import pprint
-    pprint(env)
 
 
 @task
@@ -65,7 +62,8 @@ def restart(refresh_supervisor=False, wait_before_refreshing=False):
         if not run('supervisorctl update'):
             run('supervisorctl start %(project_name)s' % env)
 
-    run('supervisorctl status %(project_name)s' % env)
+    with show('output'):
+        run('supervisorctl status %(project_name)s' % env)
 
 
 @task
@@ -83,20 +81,15 @@ def _releases():
 
 @task
 def cleanup_failed():
-    print green('-----> '), 'Cleanning up failed release'
-    if not env.has_key('releases'):
-        _releases()
+    green_alert('Cleanning up failed build')
 
-    if env.has_key('dirty_releases'):
-        with cd(env.releases_path):
-            run('rm -rf %s' % ' '.join(env.dirty_releases))
-    else:
-        print red('-----> '), 'No dirty releases to clean!'
+    with cd(env.releases_path):
+        run('rm -rf _build')
 
 
 @task
 def cleanup():
-    print green('-----> '), 'Cleanning up old release(s)'
+    green_alert('Cleanning up old release(s)')
     if not env.has_key('releases'):
         _releases()
 
@@ -113,6 +106,7 @@ def setup(branch=None):
     if branch:
         env.branch = branch
 
+    green_alert('Creating project path')
     run('mkdir -p %(path)s/{releases,shared/log}' % env)
 
     # change permission
@@ -122,19 +116,21 @@ def setup(branch=None):
 
     # clone code
     with cd(env.releases_path):
-        print green('-----> '), 'Cloning the latest code'
+        green_alert('Cloning the latest code')
         env.new_release = datetime.now().strftime(RELEASE_PATH_FORMAT)
-        run('git clone -q --depth 1 %(repo)s %(new_release)s' % env)
+        run('git clone -q --depth 1 %(repo)s _build' % env)
 
-    with cd('%(releases_path)s/%(new_release)s' % env):
-        print green('-----> '), 'Checking out %(branch)s branch' % env
+    with cd('%(releases_path)s/_build' % env):
+        green_alert('Checking out %(branch)s branch' % env)
         run('git checkout %(branch)s' % env)
 
         if callable(first_setup_repo_func):
-            print green('-----> '), 'Setting up repo'
+            green_alert('Setting up repo')
             first_setup_repo_func()
 
     # symlink
+    with cd(env.releases_path):
+        run('mv _build %(new_release)s' % env)
     with cd(env.path):
         run('ln -nfs %(releases_path)s/%(new_release)s current' % env)
 
@@ -147,63 +143,57 @@ def setup(branch=None):
 
 
 @task
-@parallel
-def prepare_release(branch=None):
+def release(branch=None, refresh_supervisor=False):
     if branch:
         env.branch = branch
 
-    print green('-----> '), 'Deploying new release on %(branch)s branch' % env
+    green_alert('Deploying new release on %(branch)s branch' % env)
 
     # get releases
     _releases()
 
-    # make a copy of current release
+    green_alert('Creating the build path')
     with cd(env.releases_path):
-        run('cp -R %(current_release)s %(new_release)s' % env)
+        run('cp -rp %(current_release)s _build' % env)
 
     try:
         # update code and environments
-        with cd('%(releases_path)s/%(new_release)s' % env):
-            print green('-----> '), 'Checking out latest code'
-            run('git fetch -q')
-            run('git reset --hard origin/%(branch)s' % env)
+        with cd('%(releases_path)s/_build' % env):
+            green_alert('Checking out latest code')
+            run('git pull -q')
+            run('git checkout %(branch)s' % env)
 
             if callable(setup_repo_func):
                 # setup repo
-                print green('-----> '), 'Setting up repo'
+                green_alert('Setting up repo')
                 setup_repo_func()
 
     except SystemExit:
-        print red('-----> '), 'New release failed to deploy'
+        red_alert('New release failed to build')
         cleanup_failed()
         exit()
 
-    print green('-----> '), 'New release successfully build'
-
-
-@task
-def link_release():
-    _releases()
-
-    if not env.releases:
-        print red('==>'), 'No release is available.'
-        exit()
-
-    env.new_release = env.releases[-1]
-
+    green_alert('Symlinking to current')
+    with cd(env.releases_path):
+        run('mv _build %(new_release)s' % env)
     with cd(env.path):
         run('ln -nfs %(releases_path)s/%(new_release)s current' % env)
-    restart()
+
+    green_alert('Launching')
+    restart(refresh_supervisor)
+    green_alert('Done. Deployed %(new_release)s on %(branch)s' % env)
+
     cleanup()
+    # TODO: do rollback when restart failed
 
 
 @task
 def rollback():
-    print green('-----> '), 'Rolling back to last release'
+    green_alert('Rolling back to last release')
     _releases()
 
     if not env.has_key('previous_release'):
-        abort('-----> No release to rollback!')
+        abort('No release to rollback')
 
     env.rollback_from = env.current_release
     env.rollback_to = env.previous_release
@@ -212,6 +202,14 @@ def rollback():
         run('ln -nfs %(releases_path)s/%(rollback_to)s current' % env)
         restart()
         run('rm -rf %(releases_path)s/%(rollback_from)s' % env)
+
+
+@task
+@runs_once
+def debug_env():
+    from pprint import pprint
+    pprint(env)
+
 
 @task
 def debug_output():
