@@ -16,8 +16,8 @@ def green_alert(msg, bold=True):
 
 
 def _apply_env_role_config():
-    stage = env.get('_env')
-    role = env.get('_role')
+    stage = env.get('env')
+    role = env.get('role')
 
     # TODO: raise error when env/role not set both
 
@@ -40,7 +40,7 @@ def register_role(role):
     def wrapper(func):
         @wraps(func)
         def wrapped(*args, **kwargs):
-            env._role = role
+            env.role = role
             _apply_env_role_config()
             return func(*args, **kwargs)
         return wrapped
@@ -51,7 +51,7 @@ def register_env(stage):
     def wrapper(func):
         @wraps(func)
         def wrapped(*args, **kwargs):
-            env._env = stage
+            env.env = stage
             _apply_env_role_config()
             return func(*args, **kwargs)
         return wrapped
