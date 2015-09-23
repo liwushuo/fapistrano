@@ -13,16 +13,15 @@ from fabric.api import prefix
 from fabric.api import task
 from fabric.api import abort
 from fabric.api import parallel
-from fabric.api import show
+from fabric.api import show, hide
 from fabric.colors import green, red, white
-from fabric.state import output
 
 from .utils import red_alert, green_alert
 
 RELEASE_PATH_FORMAT = '%y%m%d-%H%M%S'
 
 # do not print output by default
-output.output = False
+env.show_output = False
 first_setup_repo_func = None
 setup_repo_func = None
 
@@ -209,9 +208,3 @@ def rollback():
 def debug_env():
     from pprint import pprint
     pprint(env)
-
-
-@task
-def debug_output():
-    from fabric.state import output
-    output.output = True
