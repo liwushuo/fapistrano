@@ -212,3 +212,8 @@ def rollback():
         run('ln -nfs %(releases_path)s/%(rollback_to)s current' % env)
         restart()
         run('rm -rf %(releases_path)s/%(rollback_from)s' % env)
+
+@task
+def debug_output():
+    from fabric.state import output
+    output.output = True
