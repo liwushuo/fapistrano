@@ -9,6 +9,7 @@ setup(
     zip_safe=False,
     include_package_data=True,
     platforms='any',
+    packages=['fapistrano'],
     install_requires=[
         'Fabric',
     ],
