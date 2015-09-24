@@ -18,6 +18,8 @@ fab deploy.rollback
 fab deploy.debug_env
 ```
 
+Refer to [fabfile_example.py](https://ghe.liwushuo.com/ops/fapistrano/blob/master/fabfile_example.py) for more details
+
 ## Example Workflow
 
 first time setup
