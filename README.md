@@ -18,6 +18,23 @@ fab deploy.rollback
 fab deploy.debug_env
 ```
 
+## Example Workflow
+
+first time setup
+
+```
+fab staging app deploy.setup
+```
+
+deployments
+
+```
+fab staging app deploy.delta    # view diff
+fab staging app deploy.release
+fab staging app deploy.rollback # if error
+```
+
+
 ## Implemetion Details
 
 - the build folder is `releases/_build` during deployment
