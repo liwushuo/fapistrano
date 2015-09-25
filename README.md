@@ -3,7 +3,13 @@
 ## Install
 
 ``` bash
-sudo pip install git+ssh://git@ghe.liwushuo.com/ops/fapistrano.git@v0.1.0#egg=fapistrano-0.1.0
+sudo pip install fapistrano
+```
+
+To upgrade
+
+``` bash
+sudo pip install -U fapistrano
 ```
 
 ## How to Use
@@ -11,9 +17,9 @@ sudo pip install git+ssh://git@ghe.liwushuo.com/ops/fapistrano.git@v0.1.0#egg=fa
 Available tasks
 
 ```
-fab deploy.setup
+fab deploy.setup:branch=master
 fab deploy.delta
-fab deploy.release
+fab deploy.release:branch=master,refresh_supervisor=0,use_reset=0
 fab deploy.rollback
 fab deploy.debug_env
 ```
