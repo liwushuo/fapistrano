@@ -142,7 +142,7 @@ def setup(branch=None):
 
 
 @task
-def release(branch=None, refresh_supervisor=False):
+def release(branch=None, refresh_supervisor=False, use_reset=False):
     if branch:
         env.branch = branch
 
@@ -159,8 +159,12 @@ def release(branch=None, refresh_supervisor=False):
         # update code and environments
         with cd('%(releases_path)s/_build' % env):
             green_alert('Checking out latest code')
-            run('git pull -q')
-            run('git checkout %(branch)s' % env)
+            if use_reset:
+                run('git fetch -q')
+                run('git reset --hard origin/%(branch)s' % env)
+            else:
+                run('git pull -q')
+                run('git checkout %(branch)s' % env)
 
             if callable(setup_repo_func):
                 # setup repo
