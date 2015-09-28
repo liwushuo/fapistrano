@@ -3,13 +3,13 @@
 ## Install
 
 ``` bash
-sudo pip install fapistrano
+pip install fapistrano
 ```
 
 To upgrade
 
 ``` bash
-sudo pip install -U fapistrano
+pip install -U fapistrano
 ```
 
 ## How to Use
