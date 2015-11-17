@@ -197,6 +197,12 @@ def release(branch=None, refresh_supervisor=False, use_reset=False):
     cleanup()
     # TODO: do rollback when restart failed
 
+@task
+@with_configs
+def resetup_repo():
+    with cd('%(current_path)s' % env):
+        green_alert('Setting up repo')
+        setup_repo_func()
 
 @task
 @with_configs

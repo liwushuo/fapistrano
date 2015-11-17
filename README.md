@@ -21,6 +21,7 @@ fab deploy.setup:branch=master
 fab deploy.delta
 fab deploy.release:branch=master,refresh_supervisor=0,use_reset=0
 fab deploy.rollback
+fab deploy.resetup_repo deploy.restart
 fab deploy.debug_env
 fab deploy.debug_output deploy.release
 ```
