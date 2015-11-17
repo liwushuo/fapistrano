@@ -14,9 +14,10 @@ from fabric.api import task
 from fabric.api import abort
 from fabric.api import parallel
 from fabric.api import show, hide
+from fabric.api import with_settings
 from fabric.colors import green, red, white
 
-from .utils import red_alert, green_alert
+from .utils import red_alert, green_alert, with_configs
 
 RELEASE_PATH_FORMAT = '%y%m%d-%H%M%S'
 
@@ -39,6 +40,8 @@ def setup_repo(f):
 
 @task
 @runs_once
+@with_configs
+@with_settings(show('output'))
 def delta(upstream='upstream', bsd=True):
     with cd(env.current_path):
         version = run("git rev-parse --short HEAD", quiet=True)
@@ -50,6 +53,8 @@ def delta(upstream='upstream', bsd=True):
 
 
 @task
+@with_configs
+@with_settings(show('output'))
 def restart(refresh_supervisor=False, wait_before_refreshing=False):
     if not refresh_supervisor:
         run('supervisorctl restart %(project_name)s' % env)
@@ -61,8 +66,7 @@ def restart(refresh_supervisor=False, wait_before_refreshing=False):
         if not run('supervisorctl update'):
             run('supervisorctl start %(project_name)s' % env)
 
-    with show('output'):
-        run('supervisorctl status %(project_name)s' % env)
+    run('supervisorctl status %(project_name)s' % env)
 
 
 @task
@@ -79,6 +83,7 @@ def _releases():
 
 
 @task
+@with_configs
 def cleanup_failed():
     green_alert('Cleanning up failed build')
 
@@ -87,6 +92,7 @@ def cleanup_failed():
 
 
 @task
+@with_configs
 def cleanup():
     green_alert('Cleanning up old release(s)')
     if not env.has_key('releases'):
@@ -101,6 +107,7 @@ def cleanup():
 
 
 @task
+@with_configs
 def setup(branch=None):
     if branch:
         env.branch = branch
@@ -142,6 +149,7 @@ def setup(branch=None):
 
 
 @task
+@with_configs
 def release(branch=None, refresh_supervisor=False, use_reset=False):
     if branch:
         env.branch = branch
@@ -191,6 +199,7 @@ def release(branch=None, refresh_supervisor=False, use_reset=False):
 
 
 @task
+@with_configs
 def rollback():
     green_alert('Rolling back to last release')
     _releases()
@@ -208,6 +217,7 @@ def rollback():
 
 
 @task
+@with_configs
 @runs_once
 def debug_env():
     from pprint import pprint
