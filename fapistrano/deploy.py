@@ -41,32 +41,32 @@ def setup_repo(f):
 @task
 @runs_once
 @with_configs
-@with_settings(show('output'))
 def delta(upstream='upstream', bsd=True):
     with cd(env.current_path):
         version = run("git rev-parse --short HEAD", quiet=True)
 
     local('git fetch -q %s' % upstream)
-    local('git log --pretty="%%h %%s: %%b" --merges %s..%s/master | '
-          'sed -%s "s/Merge pull request #([0-9]+) from ([^/]+)\\/[^:]+/#\\1\\/\\2/"' % (
-              version, upstream, 'E' if bsd else 'r'))
+    with show('output'):
+        local('git log --pretty="%%h %%s: %%b" --merges %s..%s/master | '
+              'sed -%s "s/Merge pull request #([0-9]+) from ([^/]+)\\/[^:]+/#\\1\\/\\2/"' % (
+                  version, upstream, 'E' if bsd else 'r'))
 
 
 @task
 @with_configs
-@with_settings(show('output'))
 def restart(refresh_supervisor=False, wait_before_refreshing=False):
-    if not refresh_supervisor:
-        run('supervisorctl restart %(project_name)s' % env)
-    else:
-        run('supervisorctl stop %(project_name)s' % env)
-        if wait_before_refreshing:
-            raw_input('type any key to refresh supervisor')
-        run('supervisorctl reread')
-        if not run('supervisorctl update'):
-            run('supervisorctl start %(project_name)s' % env)
+    with show('output'):
+        if not refresh_supervisor:
+            run('supervisorctl restart %(project_name)s' % env)
+        else:
+            run('supervisorctl stop %(project_name)s' % env)
+            if wait_before_refreshing:
+                raw_input('type any key to refresh supervisor')
+            run('supervisorctl reread')
+            if not run('supervisorctl update'):
+                run('supervisorctl start %(project_name)s' % env)
 
-    run('supervisorctl status %(project_name)s' % env)
+        run('supervisorctl status %(project_name)s' % env)
 
 
 @task
