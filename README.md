@@ -22,6 +22,7 @@ fab deploy.delta
 fab deploy.release:branch=master,refresh_supervisor=0,use_reset=0
 fab deploy.rollback
 fab deploy.debug_env
+fab deploy.debug_output deploy.release
 ```
 
 Refer to [fabfile_example.py](https://ghe.liwushuo.com/ops/fapistrano/blob/master/fabfile_example.py) for more details

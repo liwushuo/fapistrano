@@ -217,6 +217,10 @@ def rollback():
 
 
 @task
+def debug_output():
+    env.show_output = True
+
+@task
 @with_configs
 @runs_once
 def debug_env():
