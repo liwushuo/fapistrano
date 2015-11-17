@@ -73,3 +73,8 @@ docs/_build/
 
 
 
+### https://raw.github.com/github/gitignore/3d6f6f82101bcc6d79216c74a2bd1e7d61cfcda7/Global/Vagrant.gitignore
+
+.vagrant/
+
+
