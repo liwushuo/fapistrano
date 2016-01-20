@@ -47,7 +47,7 @@ def delta(upstream='upstream', bsd=True):
 
     local('git fetch -q %s' % upstream)
     with show('output'):
-        local('git log --pretty="%%h %%s: %%b" --merges %s..%s/master | '
+        local('git log --reverse --pretty="%%h %%s: %%b" --merges %s..%s/master | '
               'sed -%s "s/Merge pull request #([0-9]+) from ([^/]+)\\/[^:]+/#\\1\\/\\2/"' % (
                   version, upstream, 'E' if bsd else 'r'))
 
