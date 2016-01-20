@@ -54,9 +54,27 @@ def _send_to_slack(payload, **kw):
     conf = _get_config()
     if 'slack_webhook' not in conf:
         return
+    if isinstance(payload, basestring):
+        payload = {'text': payload}
     payload.setdefault('icon_emoji', ':trollface:')
     payload.update(kw)
     return requests.post(conf['slack_webhook'], data=json.dumps(payload), timeout=10)
+
+
+def _format_target():
+    return '{app_name}-{env}'.format(**env)
+
+
+def _format_link(title, href):
+    return u'<%s|%s>' % (title, href)
+
+
+def _format_git_commit(commit):
+    conf = _get_config()
+    git_web = conf.get('git_web')
+    if not git_web:
+        return commit
+    return u'<%s%s|%s>' % (git_web, commit, commit)
 
 
 def _format_git_richlog(text):
@@ -78,14 +96,14 @@ def _format_git_richlog(text):
 
 
 def _format_delta_payload(delta_log):
-    target = '{app_name}-{env}'.format(**env)
-    notes = '@channel Please check if the above commits are ready to deploy to %s.' % target
+    notes = '[%s] Please check if the commits are ready to deploy.' % _format_target()
     return _format_common_gitlog_payload(delta_log, notes, '#aaccaa')
 
 
 def _format_release_payload(delta_log):
-    target = '{app_name}-{env}'.format(**env)
-    notes = '@channel the above commits are deployed to %s. Please check if it works properly.' % target
+    notes = '[%s] Deploy to %s. Please check if it works properly.' % (
+        _format_target(), _format_git_commit(_get_remote_head())
+    )
     return _format_common_gitlog_payload(delta_log, notes)
 
 
@@ -115,14 +133,30 @@ def _format_common_gitlog_payload(gitlog, notes, color='#D00000'):
     return payload
 
 
-def _get_delta(upstream='upstream', bsd=True):
+def _get_remote_head():
     with cd(env.current_path):
-        version = run("git rev-parse --short HEAD", quiet=True)
+        return run("git rev-parse --short HEAD", quiet=True)
+
+
+def _get_delta(upstream='upstream', bsd=True):
+    version = _get_remote_head()
 
     local('git fetch -q %s' % upstream)
     return local('git log --reverse --pretty="%%h %%s: %%b" --merges %s..%s/master | '
                  'sed -%s "s/Merge pull request #([0-9]+) from ([^/]+)\\/[^:]+/#\\1\\/\\2/"' % (
                      version, upstream, 'E' if bsd else 'r'), capture=True).decode('utf8')
+
+
+@task
+@runs_once
+@with_configs
+def head(slack_channel=None):
+    green_alert('[%s] Current head: %s' % (_format_target(), _get_remote_head()))
+    if slack_channel:
+        _send_to_slack(
+            '[%s] Current head: %s' % (_format_target(), _format_git_commit(_get_remote_head())),
+            channel=slack_channel
+        )
 
 
 @task
@@ -143,7 +177,7 @@ def delta(upstream='upstream', bsd=True, slack_channel=None):
 
 @task
 @with_configs
-def restart(refresh_supervisor=False, wait_before_refreshing=False):
+def restart(refresh_supervisor=False, wait_before_refreshing=False, slack_channel=None):
     with show('output'):
         if not refresh_supervisor:
             run('supervisorctl restart %(project_name)s' % env)
@@ -156,6 +190,15 @@ def restart(refresh_supervisor=False, wait_before_refreshing=False):
                 run('supervisorctl start %(project_name)s' % env)
 
         run('supervisorctl status %(project_name)s' % env)
+
+    # FIXME: get the status of the service
+
+    green_alert('Service restarted at %s' % _get_remote_head())
+    if slack_channel:
+        _send_to_slack(
+            '[%s] Restart at %s' % (_format_target(), _format_git_commit(_get_remote_head())),
+            channel=slack_channel
+        )
 
 
 @task
@@ -245,52 +288,56 @@ def release(branch=None, refresh_supervisor=False, use_reset=False, bsd=True, sl
 
     delta_log = _get_delta(branch or 'upstream', bsd)
 
-    green_alert('Deploying new release on %(branch)s branch' % env)
+    if delta_log:
+        green_alert('Deploying new release on %(branch)s branch' % env)
 
-    # get releases
-    _releases()
+        # get releases
+        _releases()
 
-    green_alert('Creating the build path')
-    with cd(env.releases_path):
-        run('cp -rp %(current_release)s _build' % env)
+        green_alert('Creating the build path')
+        with cd(env.releases_path):
+            run('cp -rp %(current_release)s _build' % env)
 
-    try:
-        # update code and environments
-        with cd('%(releases_path)s/_build' % env):
-            green_alert('Checking out latest code')
-            if use_reset:
-                run('git fetch -q')
-                run('git reset --hard origin/%(branch)s' % env)
-            else:
-                run('git pull -q')
-                run('git checkout %(branch)s' % env)
+        try:
+            # update code and environments
+            with cd('%(releases_path)s/_build' % env):
+                green_alert('Checking out latest code')
+                if use_reset:
+                    run('git fetch -q')
+                    run('git reset --hard origin/%(branch)s' % env)
+                else:
+                    run('git pull -q')
+                    run('git checkout %(branch)s' % env)
 
-            if callable(setup_repo_func):
-                # setup repo
-                green_alert('Setting up repo')
-                setup_repo_func()
+                if callable(setup_repo_func):
+                    # setup repo
+                    green_alert('Setting up repo')
+                    setup_repo_func()
 
-    except SystemExit:
-        red_alert('New release failed to build')
-        cleanup_failed()
-        exit()
+        except SystemExit:
+            red_alert('New release failed to build')
+            cleanup_failed()
+            exit()
 
-    green_alert('Symlinking to current')
-    with cd(env.releases_path):
-        run('mv _build %(new_release)s' % env)
-    with cd(env.path):
-        run('ln -nfs %(releases_path)s/%(new_release)s current' % env)
+        green_alert('Symlinking to current')
+        with cd(env.releases_path):
+            run('mv _build %(new_release)s' % env)
+        with cd(env.path):
+            run('ln -nfs %(releases_path)s/%(new_release)s current' % env)
+        green_alert('Done. Deployed %(new_release)s on %(branch)s' % env)
 
     green_alert('Launching')
     restart(refresh_supervisor)
-    green_alert('Done. Deployed %(new_release)s on %(branch)s' % env)
 
     cleanup()
 
-    green_alert('Release log:\n%s' % delta_log)
+    green_alert('Release to %s' % _get_remote_head())
+    if delta_log:
+        green_alert('Release log:\n%s' % delta_log)
 
     if slack_channel:
         _send_to_slack(_format_release_payload(delta_log), channel=slack_channel)
+
     # TODO: do rollback when restart failed
 
 @task
@@ -302,7 +349,7 @@ def resetup_repo():
 
 @task
 @with_configs
-def rollback():
+def rollback(slack_channel=None):
     green_alert('Rolling back to last release')
     _releases()
 
@@ -316,6 +363,13 @@ def rollback():
         run('ln -nfs %(releases_path)s/%(rollback_to)s current' % env)
         restart()
         run('rm -rf %(releases_path)s/%(rollback_from)s' % env)
+
+    green_alert('Rollback to %s' % _get_remote_head())
+    if slack_channel:
+        _send_to_slack(
+            '[%s] Rollback to %s' % (_format_target(), _format_git_commit(_get_remote_head())),
+            channel=slack_channel
+        )
 
 
 @task
