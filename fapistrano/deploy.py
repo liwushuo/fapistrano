@@ -3,6 +3,7 @@
 import os
 import new
 from datetime import datetime
+import atexit
 
 from fabric.api import runs_once
 from fabric.api import local
@@ -29,6 +30,8 @@ RELEASE_PATH_FORMAT = '%y%m%d-%H%M%S'
 env.show_output = False
 first_setup_repo_func = None
 setup_repo_func = None
+slack_sendbox = []
+slack_atexit = False
 
 def first_setup_repo(f):
     global first_setup_repo_func
@@ -50,6 +53,14 @@ def _get_config():
     except IOError:
         return {}
 
+
+def _check_slack_sendbox(data):
+    if data in slack_sendbox:
+        return False
+    slack_sendbox.append(data)
+    return True
+
+
 def _send_to_slack(payload, **kw):
     conf = _get_config()
     if 'slack_webhook' not in conf:
@@ -58,7 +69,17 @@ def _send_to_slack(payload, **kw):
         payload = {'text': payload}
     payload.setdefault('icon_emoji', ':trollface:')
     payload.update(kw)
-    return requests.post(conf['slack_webhook'], data=json.dumps(payload), timeout=10)
+    data = json.dumps(payload)
+    if not _check_slack_sendbox(data):
+        return
+
+    global slack_atexit
+    if not slack_atexit:
+        slack_atexit = True
+        @atexit.register
+        def send():
+            for data in slack_sendbox:
+                return requests.post(conf['slack_webhook'], data=data, timeout=10)
 
 
 def _format_target():
