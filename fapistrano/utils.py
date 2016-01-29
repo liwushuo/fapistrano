@@ -34,7 +34,9 @@ def _apply_env_role_config():
 
     if stage in env.env_role_configs:
         if role in env.env_role_configs[stage]:
-            env.update(env.env_role_configs[stage][role])
+            config = env.env_role_configs[stage][role]
+            config.setdefault('supervisor_target', config.get('project_name', env.project_name))
+            env.update(config)
 
     env.path = '/home/%(user)s/www/%(project_name)s' % env
     env.current_path = '%(path)s/current' % env

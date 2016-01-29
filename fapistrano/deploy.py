@@ -201,16 +201,16 @@ def delta(upstream='upstream', bsd=True, slack_channel=None):
 def restart(refresh_supervisor=False, wait_before_refreshing=False, slack_channel=None):
     with show('output'):
         if not refresh_supervisor:
-            run('supervisorctl restart %(project_name)s' % env)
+            run('supervisorctl restart %(supervisor_target)s' % env)
         else:
-            run('supervisorctl stop %(project_name)s' % env)
+            run('supervisorctl stop %(supervisor_target)s' % env)
             if wait_before_refreshing:
                 raw_input('type any key to refresh supervisor')
             run('supervisorctl reread')
             if not run('supervisorctl update'):
-                run('supervisorctl start %(project_name)s' % env)
+                run('supervisorctl start %(supervisor_target)s' % env)
 
-        run('supervisorctl status %(project_name)s' % env)
+        run('supervisorctl status %(supervisor_target)s' % env)
 
     # FIXME: get the status of the service
 
