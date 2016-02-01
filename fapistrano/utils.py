@@ -24,6 +24,11 @@ def _apply_checking():
 
 
 # hosts config must be set before task running
+
+def _parse_env_role_config(env, config):
+    config.setdefault('supervisor_target', config.get('project_name', env.project_name))
+    return config
+
 def _apply_env_role_config():
     stage = env.get('env')
     role = env.get('role')
@@ -35,7 +40,7 @@ def _apply_env_role_config():
     if stage in env.env_role_configs:
         if role in env.env_role_configs[stage]:
             config = env.env_role_configs[stage][role]
-            config.setdefault('supervisor_target', config.get('project_name', env.project_name))
+            config = _parse_env_role_config(env, config)
             env.update(config)
 
     env.path = '/home/%(user)s/www/%(project_name)s' % env
