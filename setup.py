@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='fapistrano',
-    version='0.5.0',
+    version='0.5.1',
     license='MIT',
     description='Capistrano style deployment with fabric',
     zip_safe=False,
