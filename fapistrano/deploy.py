@@ -210,7 +210,8 @@ def restart(refresh_supervisor=False, wait_before_refreshing=False, slack_channe
             if not run('supervisorctl update'):
                 run('supervisorctl start %(supervisor_target)s' % env)
 
-        run('supervisorctl status %(supervisor_target)s' % env)
+        # since supervisorctl does not support `supervisorctl status group_name:*` syntax
+        run('supervisorctl status | grep %(project_name)s' % env)
 
     # FIXME: get the status of the service
 
