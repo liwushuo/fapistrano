@@ -25,8 +25,13 @@ def _apply_checking():
 
 # hosts config must be set before task running
 
+def _get_supervisor_target(project_name, as_group=False):
+    return '%s:*' % project_name if as_group else project_name
+
 def _parse_env_role_config(env, config):
-    config.setdefault('supervisor_target', config.get('project_name', env.project_name))
+    project_name = config.get('project_name', env.project_name)
+    as_group = bool(config.get('as_group'))
+    config.setdefault('supervisor_target', _get_supervisor_target(project_name, as_group))
     return config
 
 def _apply_env_role_config():
