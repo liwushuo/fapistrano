@@ -2,6 +2,7 @@
 
 import json
 import requests
+import atexit
 
 from blinker import signal
 from fabric.api import env
@@ -9,17 +10,23 @@ from fabric.api import task
 
 from ..utils import red_alert
 
+slack_sendbox = []
+
 def init():
-    signal('slack.send').connect(_send_text)
+    signal('slack.send').connect(_send_data_to_sendbox)
 
 @task
 def send_message(text, icon_emoji=':trollface:', timeout=10):
     assert env.slack_webhook
     signal('slack.send').send(None, text=text, icon_emoji=icon_emoji, timeout=timeout)
 
-def _send_text(sender, **kwargs):
-    signal('slack.sending').send(None, **kwargs)
+def _check_slack_sendbox(data):
+    if data in slack_sendbox:
+        return False
+    slack_sendbox.append(data)
+    return True
 
+def _send_data_to_sendbox(sender, **kwargs):
     if 'text' in kwargs:
         payload = {
             'text': kwargs.get('text'),
@@ -35,5 +42,14 @@ def _send_text(sender, **kwargs):
         payload['channel'] = env.slack_channel
 
     data = json.dumps(payload)
-    resp = requests.post(env.slack_webhook, data=data, timeout=kwargs.get('timeout', 10))
-    signal('slack.sent').send(None, is_success=resp.status_code == 200)
+
+    if not _check_slack_sendbox(data):
+        return
+
+def _call_slack_webhook(data):
+    requests.post(env.slack_webhook, data=data, timeout=10)
+
+@atexit.register
+def send():
+    for data in slack_sendbox:
+        _call_slack_webhook(data)
