@@ -2,7 +2,7 @@
 
 from blinker import signal
 from fabric.api import cd, env, run, local, task
-from .utils import green_alert
+from ..utils import green_alert
 
 def init():
     signal('deploy.delta.publishing').connect(publish_git_delta)

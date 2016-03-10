@@ -5,7 +5,7 @@ import os
 import yaml
 from blinker import signal
 from fabric.api import env
-from .slack import send_message
+
 
 def init():
     signal('git.delta.publishing').connect(_publish_git_delta_to_slack)

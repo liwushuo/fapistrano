@@ -7,7 +7,7 @@ from blinker import signal
 from fabric.api import env
 from fabric.api import task
 
-from .utils import red_alert
+from ..utils import red_alert
 
 def init():
     signal('slack.send').connect(_send_text)
