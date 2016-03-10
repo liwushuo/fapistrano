@@ -6,10 +6,12 @@ import yaml
 from blinker import signal
 from fabric.api import env
 
-
 def init():
     signal('git.delta.publishing').connect(_publish_git_delta_to_slack)
     signal('git.head.publishing').connect(_publish_git_head_to_slack)
+    signal('git.reverted').connect(_publish_rollback_head_to_slack)
+    signal('git.updated').connect(_publish_updated_delta_to_slack)
+
 
 def _publish_git_delta_to_slack(sender, **kwargs):
     payload = _format_delta_payload(kwargs.get('delta_log'))
@@ -21,6 +23,18 @@ def _publish_git_head_to_slack(sender, **kwargs):
     head = _format_git_commit(head)
     text = """[%s] Current head: %s""" % (target, head)
     signal('slack.send').send(None, text=text)
+
+def _publish_rollback_head_to_slack(sender, **kwargs):
+    target = _format_target()
+    head = kwargs.get('head')
+    head = _format_git_commit(head)
+    text = """[%s] Rollback to %s""" % (target, head)
+    signal('slack.send').send(None, text=text)
+
+def _publish_updated_delta_to_slack(sender, **kwargs):
+    delta_log = kwargs.get('delta_log')
+    payload = _format_release_payload(delta_log)
+    signal('slack.send').send(None, payload=payload)
 
 def _format_delta_payload(delta_log):
     notes = '[%s] Please check if the commits are ready to deploy.' % _format_target()
@@ -85,3 +99,9 @@ def _format_git_commit(commit):
     if not git_web:
         return commit
     return u'<%s%s|%s>' % (git_web, commit, commit)
+
+def _format_release_payload(delta_log):
+    notes = '[%s] Deploy to %s. Please check if it works properly.' % (
+        _format_target(), _format_git_commit(_get_remote_head())
+    )
+    return _format_common_gitlog_payload(delta_log, notes)
