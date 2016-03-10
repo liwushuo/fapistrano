@@ -5,6 +5,7 @@ import new
 from datetime import datetime
 import atexit
 
+from blinker import signal
 from fabric.api import runs_once
 from fabric.api import local
 from fabric.api import run
@@ -171,29 +172,18 @@ def _get_delta(upstream='upstream', bsd=True):
 @task
 @runs_once
 @with_configs
-def head(slack_channel=None):
-    green_alert('[%s] Current head: %s' % (_format_target(), _get_remote_head()))
-    if slack_channel:
-        _send_to_slack(
-            '[%s] Current head: %s' % (_format_target(), _format_git_commit(_get_remote_head())),
-            channel=slack_channel
-        )
-
+def head():
+    # deprecated
+    signal('deploy.head.publishing').send(None)
+    signal('deploy.head.published').send(None)
 
 @task
 @runs_once
 @with_configs
-def delta(upstream='upstream', bsd=True, slack_channel=None):
-    delta_log = _get_delta(upstream, bsd)
-
-    if not delta_log:
-        green_alert('No delta.')
-        return
-
-    green_alert('Get delta:\n%s' % delta_log)
-
-    if slack_channel:
-        _send_to_slack(_format_delta_payload(delta_log), channel=slack_channel)
+def delta():
+    # deprecated
+    signal('deploy.delta.publishing').send(None)
+    signal('deploy.delta.published').send(None)
 
 
 @task
