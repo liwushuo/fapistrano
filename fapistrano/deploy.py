@@ -205,14 +205,6 @@ def restart(refresh_supervisor=False, wait_before_refreshing=False, slack_channe
 
     # FIXME: get the status of the service
 
-    green_alert('Service restarted at %s' % _get_remote_head())
-    if slack_channel:
-        _send_to_slack(
-            '[%s] Restart at %s' % (_format_target(), _format_git_commit(_get_remote_head())),
-            channel=slack_channel
-        )
-
-
 @task
 def _releases():
     env.releases = sorted(run('ls -x %(releases_path)s' % env).split())
