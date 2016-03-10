@@ -188,7 +188,7 @@ def delta():
 
 @task
 @with_configs
-def restart(refresh_supervisor=False, wait_before_refreshing=False, slack_channel=None):
+def restart(refresh_supervisor=False, wait_before_refreshing=False):
     with show('output'):
         if not refresh_supervisor:
             run('supervisorctl restart %(supervisor_target)s' % env)
@@ -286,7 +286,7 @@ def setup(branch=None):
 
 @task
 @with_configs
-def release(branch=None, refresh_supervisor=False, use_reset=False, bsd=True, slack_channel=None):
+def release(branch=None, refresh_supervisor=False, use_reset=False, bsd=True):
     if branch:
         env.branch = branch
 
