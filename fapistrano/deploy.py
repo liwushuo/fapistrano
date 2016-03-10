@@ -313,13 +313,13 @@ def release(branch=None, refresh_supervisor=False, use_reset=False, bsd=True, sl
         try:
             # update code and environments
             with cd('%(releases_path)s/_build' % env):
-                green_alert('Checking out latest code')
-                if use_reset:
-                    run('git fetch -q')
-                    run('git reset --hard origin/%(branch)s' % env)
-                else:
-                    run('git pull -q')
-                    run('git checkout %(branch)s' % env)
+                signal('deploy.updating').send(
+                    None,
+                    git_user_reset=use_reset,
+                    git_bsd=bsd,
+                )
+
+                signal('deploy.updated').send(None)
 
                 if callable(setup_repo_func):
                     # setup repo
@@ -343,13 +343,6 @@ def release(branch=None, refresh_supervisor=False, use_reset=False, bsd=True, sl
 
     cleanup()
 
-    green_alert('Release to %s' % _get_remote_head())
-    if delta_log:
-        green_alert('Release log:\n%s' % delta_log)
-
-    if slack_channel:
-        _send_to_slack(_format_release_payload(delta_log), channel=slack_channel)
-
     # TODO: do rollback when restart failed
 
 @task
@@ -361,7 +354,7 @@ def resetup_repo():
 
 @task
 @with_configs
-def rollback(slack_channel=None):
+def rollback():
     green_alert('Rolling back to last release')
     _releases()
 
@@ -377,11 +370,8 @@ def rollback(slack_channel=None):
         run('rm -rf %(releases_path)s/%(rollback_from)s' % env)
 
     green_alert('Rollback to %s' % _get_remote_head())
-    if slack_channel:
-        _send_to_slack(
-            '[%s] Rollback to %s' % (_format_target(), _format_git_commit(_get_remote_head())),
-            channel=slack_channel
-        )
+
+    signal('git.reverted').send(None)
 
 
 @task
