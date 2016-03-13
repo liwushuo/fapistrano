@@ -42,10 +42,7 @@ def first_setup_repo(f):
 
 
 def setup_repo(f):
-    # legacy interface, this should not be used anymore.
-    def setup_repo_func(sender, **kwargs):
-        f()
-    signal('git.building').connect(setup_repo_func)
+    signal('git.building').connect(lambda s, **kw: f(), weak=False)
     return f
 
 
