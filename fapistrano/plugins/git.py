@@ -15,6 +15,7 @@ def init():
     signal('deploy.head.publishing').connect(publish_git_head)
     signal('deploy.reverted').connect(log_reverted_revision)
     signal('deploy.updating').connect(update_git_repo)
+    signal('deploy.publishing').connect(publish_git_repo_as_current_release)
 
 def publish_git_delta(sender=None, **kwargs):
     delta_log = _get_delta()
@@ -51,6 +52,19 @@ def update_git_repo(sender=None, **kwargs):
         green_alert('Release log:\n%s' % delta_log)
 
     signal('git.updated').send(None, delta_log=delta_log, head=head)
+def publish_git_repo_as_current_release(sender=None, **kwargs):
+    with cd(env.path):
+        run('cp -r %(path)s/repo %(releases_path)s/_build' % env)
+        with cd('%(releases_path)s/_build' % env):
+            try:
+                signal('git.building').send(None)
+                signal('git.built').send(None)
+            except SystemExit:
+                red_alert('New release failed to build, Cleaning up failed build')
+                run('rm -rf %(release_path)s/_build' % env)
+                exit()
+        with cd('%(releases_path)s' % env):
+            run('mv _build %(new_release)s' % env)
 
 def _clone_git_repo(repo, branch='master'):
     green_alert('Cloning the latest code')
