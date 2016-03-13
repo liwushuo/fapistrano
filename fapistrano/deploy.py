@@ -30,7 +30,6 @@ RELEASE_PATH_FORMAT = '%y%m%d-%H%M%S'
 # do not print output by default
 env.show_output = False
 first_setup_repo_func = None
-setup_repo_func = None
 
 def first_setup_repo(f):
     global first_setup_repo_func
@@ -39,8 +38,10 @@ def first_setup_repo(f):
 
 
 def setup_repo(f):
-    global setup_repo_func
-    setup_repo_func = f
+    # legacy interface, this should not be used anymore.
+    def setup_repo_func(sender, **kwargs):
+        f()
+    signal('git.building').connect(setup_repo_func)
     return f
 
 
