@@ -22,7 +22,7 @@ def publish_git_delta(sender=None, **kwargs):
         green_alert('No delta.')
         return
     green_alert('Get delta:\n%s' % delta_log)
-    signal('git.delta.publishing').send(None, delta_log=delta_log)
+    signal('git.delta.publishing').send(None, head=_get_remote_head(), delta_log=delta_log)
 
 def publish_git_head(sender=None, **kwargs):
     head = _get_remote_head()
