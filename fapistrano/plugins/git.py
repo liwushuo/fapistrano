@@ -2,7 +2,8 @@
 
 from blinker import signal
 from fabric.api import cd, env, run, local, task
-from ..utils import green_alert
+from fabric.contrib.files import exists
+from ..utils import green_alert, red_alert
 
 def init():
     if not hasattr(env, 'git_use_reset'):
@@ -36,22 +37,29 @@ def log_reverted_revision(sender=None, **kwargs):
     signal('git.reverted').send(None, head=head)
 
 def update_git_repo(sender=None, **kwargs):
-    delta_log = _get_delta(bsd=kwargs.get('git_bsd', True))
+    if not exists('%(path)s/repo' % env):
+        _clone_git_repo(env.repo, env.branch)
 
-    if kwargs.get('git_use_reset'):
-        run('git fetch -q')
-        run('git reset --hard origin/%(branch)s' % env)
-    else:
-        run('git pull -q')
-        run('git checkout %(branch)s' % env)
+    with cd('%(path)s/repo' % env):
+        delta_log = _get_delta(bsd=env.sed_bsd)
 
-    head = _get_remote_head()
-    green_alert('Release to %s' % head)
+        signal('git.updating').send(None)
 
-    if delta_log:
-        green_alert('Release log:\n%s' % delta_log)
+        if env.git_use_reset:
+            run('git fetch -q')
+            run('git reset --hard origin/%(branch)s' % env)
+        else:
+            run('git pull -q')
+            run('git checkout %(branch)s' % env)
 
-    signal('git.updated').send(None, delta_log=delta_log, head=head)
+        head = _get_remote_head()
+        signal('git.updated').send(None, delta_log=delta_log, head=head)
+
+        green_alert('Release to %s' % head)
+
+        if delta_log:
+            green_alert('Release log:\n%s' % delta_log)
+
 def publish_git_repo_as_current_release(sender=None, **kwargs):
     with cd(env.path):
         run('cp -r %(path)s/repo %(releases_path)s/_build' % env)
