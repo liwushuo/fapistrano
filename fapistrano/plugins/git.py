@@ -94,7 +94,6 @@ def _get_delta(upstream='upstream', bsd=True):
     local('/usr/bin/env git fetch -q %s' % upstream)
     #FIXME
     return local(
-        'cd /Users/soasme/space/liwushuo/nasdaq ; '
         '/usr/bin/env git log --reverse --pretty="%%h %%s: %%b" --merges %s..%s/master | '
         '/usr/bin/env sed -%s "s/Merge pull request #([0-9]+) from ([^/]+)\\/[^:]+/#\\1\\/\\2/"' % (
             version, upstream, 'E' if bsd else 'r'), capture=True).decode('utf8')
