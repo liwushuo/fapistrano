@@ -97,6 +97,9 @@ def cleanup_failed():
 
 @task
 @with_configs
+def cleanup_rollback():
+    green_alert('Cleaning up %(releases_path)s/%(rollback_from)s' % env)
+    run('rm -rf %(releases_path)s/%(rollback_from)s' % env)
 
 @task
 @with_configs
@@ -143,6 +146,8 @@ def cleanup():
         run('supervisorctl update')
         run('supervisorctl status')
 
+def _symlink_rollback():
+    _symlink_current('%(releases_path)s/%(rollback_to)s' % env)
 
 @task
 @with_configs
@@ -200,25 +205,30 @@ def resetup_repo():
     with cd('%(current_path)s' % env):
         green_alert('Setting up repo')
         setup_repo_func()
+def _check_rollback_to():
+    if not env.rollback_to:
+        abort('No release to rollback')
 
 @task
 @with_configs
 def rollback():
+    signal('deploy.starting').send(None)
     green_alert('Rolling back to last release')
-    _releases()
+    env.rollback_from = get_current_release()
+    env.rollback_to = get_previous_release()
+    _check_rollback_to()
+    signal('deploy.started').send(None)
 
-    if not env.has_key('previous_release'):
-        abort('No release to rollback')
+    signal('deploy.reverting').send(None)
+    signal('deploy.reverted').send(None)
 
-    env.rollback_from = env.current_release
-    env.rollback_to = env.previous_release
+    signal('deploy.publishing').send(None)
+    _symlink_rollback()
+    signal('deploy.published').send(None)
 
-    with cd(env.path):
-        run('ln -nfs %(releases_path)s/%(rollback_to)s current' % env)
-        restart()
-        run('rm -rf %(releases_path)s/%(rollback_from)s' % env)
-
-    signal('git.reverted').send(None)
+    signal('deploy.finishing_rollback').send(None)
+    cleanup_rollback()
+    signal('deploy.finished').send(None)
 
 
 @task
