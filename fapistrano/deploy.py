@@ -24,6 +24,10 @@ import requests
 import json
 
 from .utils import red_alert, green_alert, with_configs
+from .directory import (
+    get_outdated_releases, get_releases_path,
+    get_current_release, get_previous_release,
+)
 
 RELEASE_PATH_FORMAT = '%y%m%d-%H%M%S'
 
@@ -93,24 +97,16 @@ def cleanup_failed():
 
 @task
 @with_configs
-def cleanup():
-    green_alert('Cleanning up old release(s)')
-    if not env.has_key('releases'):
-        _releases()
-
-    if len(env.releases) > env.keep_releases:
-        directories = env.releases
-        directories.reverse()
-        del directories[:env.keep_releases]
-        with cd(env.releases_path):
-            run('rm -rf %s' % ' '.join(directories))
-
 
 @task
 @with_configs
 def setup(branch=None):
     if branch:
         env.branch = branch
+def cleanup():
+    green_alert('Cleanning up old release(s)')
+    with cd(get_releases_path()):
+        run('rm -rf %s' % ' '.join(get_outdated_releases()))
 
     green_alert('Creating project path')
     run('mkdir -p %(path)s/{releases,shared/log}' % env)
