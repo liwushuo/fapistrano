@@ -89,7 +89,7 @@ def release(branch=None):
 
     green_alert('Starting')
     signal.emit('deploy.starting')
-    _check()
+    _start_deploy()
 
     green_alert('Started')
     signal.emit('deploy.started')
@@ -158,7 +158,8 @@ def debug_env():
     pprint(env)
 
 
-
+def _start_deploy():
+    _check()
 
 def _check():
     run('mkdir -p %(path)s/{releases,shared/log}' % env)
