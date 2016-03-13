@@ -5,7 +5,6 @@ import new
 from datetime import datetime
 import atexit
 
-from blinker import signal
 from fabric.api import runs_once
 from fabric.api import local
 from fabric.api import run
@@ -28,12 +27,14 @@ from .directory import (
     get_outdated_releases, get_releases_path,
     get_current_release, get_previous_release,
 )
+from . import signal
 
 RELEASE_PATH_FORMAT = '%y%m%d-%H%M%S'
 
 # do not print output by default
 env.show_output = False
 first_setup_repo_func = None
+setup_repo_func = None
 
 def first_setup_repo(f):
     global first_setup_repo_func
@@ -42,7 +43,7 @@ def first_setup_repo(f):
 
 
 def setup_repo(f):
-    signal('git.building').connect(lambda s, **kw: f(), weak=False)
+    signal.register('git.building', lambda **data: f())
     return f
 
 
@@ -51,23 +52,23 @@ def setup_repo(f):
 @with_configs
 def head():
     # deprecated
-    signal('deploy.head.publishing').send(None)
-    signal('deploy.head.published').send(None)
+    signal.emit('deploy.head.publishing')
+    signal.emit('deploy.head.published')
 
 @task
 @runs_once
 @with_configs
 def delta():
     # deprecated
-    signal('deploy.delta.publishing').send(None)
-    signal('deploy.delta.published').send(None)
+    signal.emit('deploy.delta.publishing')
+    signal.emit('deploy.delta.published')
 
 
 @task
 @with_configs
 def restart():
-    signal('deploy.restarting').send(None)
-    signal('deploy.restarted').send(None)
+    signal.emit('deploy.restarting')
+    signal.emit('deploy.restarted')
     # FIXME: get the status of the service
 
 @task
@@ -130,31 +131,31 @@ def release(branch=None):
     green_alert('Deploying new release on %(branch)s branch' % env)
 
     green_alert('Starting')
-    signal('deploy.starting').send(None)
+    signal.emit('deploy.starting')
     _check()
 
     green_alert('Started')
-    signal('deploy.started').send(None)
+    signal.emit('deploy.started')
 
     green_alert('Updating')
-    signal('deploy.updating').send(None)
+    signal.emit('deploy.updating')
 
     green_alert('Updated')
-    signal('deploy.updated').send(None)
+    signal.emit('deploy.updated')
 
     green_alert('Publishing')
-    signal('deploy.publishing').send(None)
+    signal.emit('deploy.publishing')
     _symlink_new_release()
 
     green_alert('Published')
-    signal('deploy.published').send(None)
+    signal.emit('deploy.published')
 
     green_alert('Finishing')
-    signal('deploy.finishing').send(None)
+    signal.emit('deploy.finishing')
     cleanup()
 
     green_alert('Finished')
-    signal('deploy.finished').send(None)
+    signal.emit('deploy.finished')
 
     # TODO: do rollback when restart failed
 
@@ -162,8 +163,8 @@ def release(branch=None):
 @with_configs
 def resetup_repo():
     with cd('%(current_path)s' % env):
-        signal('git.building').send(None)
-        signal('git.built').send(None)
+        signal.emit('git.building')
+        signal.emit('git.built')
 
 def _check_rollback_to():
     if not env.rollback_to:
@@ -172,23 +173,23 @@ def _check_rollback_to():
 @task
 @with_configs
 def rollback():
-    signal('deploy.starting').send(None)
+    signal.emit('deploy.starting')
     green_alert('Rolling back to last release')
     env.rollback_from = get_current_release()
     env.rollback_to = get_previous_release()
     _check_rollback_to()
-    signal('deploy.started').send(None)
+    signal.emit('deploy.started')
 
-    signal('deploy.reverting').send(None)
-    signal('deploy.reverted').send(None)
+    signal.emit('deploy.reverting')
+    signal.emit('deploy.reverted')
 
-    signal('deploy.publishing').send(None)
+    signal.emit('deploy.publishing')
     _symlink_rollback()
-    signal('deploy.published').send(None)
+    signal.emit('deploy.published')
 
-    signal('deploy.finishing_rollback').send(None)
+    signal.emit('deploy.finishing_rollback')
     cleanup_rollback()
-    signal('deploy.finished').send(None)
+    signal.emit('deploy.finished')
 
 
 @task

@@ -3,39 +3,40 @@
 import os
 
 import yaml
-from blinker import signal
+
 from fabric.api import env
+from .. import signal
 
 def init():
-    signal('git.delta.publishing').connect(_publish_git_delta_to_slack)
-    signal('git.head.publishing').connect(_publish_git_head_to_slack)
-    signal('git.reverted').connect(_publish_rollback_head_to_slack)
-    signal('git.updated').connect(_publish_updated_delta_to_slack)
+    signal.register('git.delta.publishing', _publish_git_delta_to_slack)
+    signal.register('git.head.publishing', _publish_git_head_to_slack)
+    signal.register('git.reverted', _publish_rollback_head_to_slack)
+    signal.register('git.updated', _publish_updated_delta_to_slack)
 
 
-def _publish_git_delta_to_slack(sender, **kwargs):
+def _publish_git_delta_to_slack(**kwargs):
     payload = _format_delta_payload(kwargs.get('delta_log'))
-    signal('slack.send').send(None, payload=payload)
+    signal.emit('slack.send', payload=payload)
 
-def _publish_git_head_to_slack(sender, **kwargs):
+def _publish_git_head_to_slack(**kwargs):
     target = _format_target()
     head = kwargs.get('head')
     head = _format_git_commit(head)
     text = """[%s] Current head: %s""" % (target, head)
-    signal('slack.send').send(None, text=text)
+    signal.emit('slack.send', text=text)
 
-def _publish_rollback_head_to_slack(sender, **kwargs):
+def _publish_rollback_head_to_slack(**kwargs):
     target = _format_target()
     head = kwargs.get('head')
     head = _format_git_commit(head)
     text = """[%s] Rollback to %s""" % (target, head)
-    signal('slack.send').send(None, text=text)
+    signal.emit('slack.send', text=text)
 
-def _publish_updated_delta_to_slack(sender, **kwargs):
+def _publish_updated_delta_to_slack(**kwargs):
     delta_log = kwargs.get('delta_log')
     remote_head = kwargs.get('head')
     payload = _format_release_payload(remote_head, delta_log)
-    signal('slack.send').send(None, payload=payload)
+    signal.emit('slack.send', payload=payload)
 
 def _format_delta_payload(delta_log):
     notes = '[%s] Please check if the commits are ready to deploy.' % _format_target()

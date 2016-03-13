@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from blinker import signal
 from fabric.api import cd, env, run, local, task
 from fabric.contrib.files import exists
 from ..utils import green_alert, red_alert
+from .. import signal
 
 def init():
     if not hasattr(env, 'git_use_reset'):
@@ -12,38 +12,38 @@ def init():
     if not hasattr(env, 'sed_bsd'):
         env.sed_bsd = True
 
-    signal('deploy.delta.publishing').connect(publish_git_delta)
-    signal('deploy.head.publishing').connect(publish_git_head)
-    signal('deploy.reverted').connect(log_reverted_revision)
-    signal('deploy.updating').connect(update_git_repo)
-    signal('deploy.updated').connect(publish_git_repo_as_current_release)
+    signal.register('deploy.delta.publishing', publish_git_delta)
+    signal.register('deploy.head.publishing', publish_git_head)
+    signal.register('deploy.reverted', log_reverted_revision)
+    signal.register('deploy.updating', update_git_repo)
+    signal.register('deploy.updated', publish_git_repo_as_current_release)
 
-def publish_git_delta(sender=None, **kwargs):
+def publish_git_delta(**kwargs):
     delta_log = _get_delta()
     if not delta_log:
         green_alert('No delta.')
         return
     green_alert('Get delta:\n%s' % delta_log)
-    signal('git.delta.publishing').send(None, head=_get_remote_head(), delta_log=delta_log)
+    signal.emit('git.delta.publishing', head=_get_remote_head(), delta_log=delta_log)
 
-def publish_git_head(sender=None, **kwargs):
+def publish_git_head(**kwargs):
     head = _get_remote_head()
     green_alert('Get head: \n%s' % head)
-    signal('git.head.publishing').send(None, head=head)
+    signal.emit('git.head.publishing', head=head)
 
-def log_reverted_revision(sender=None, **kwargs):
+def log_reverted_revision(**kwargs):
     head = _get_remote_head()
     green_alert('Rollback to %s' % head)
-    signal('git.reverted').send(None, head=head)
+    signal.emit('git.reverted', head=head)
 
-def update_git_repo(sender=None, **kwargs):
+def update_git_repo(**kwargs):
     if not exists('%(path)s/repo' % env):
         _clone_git_repo(env.repo, env.branch)
 
     with cd('%(path)s/repo' % env):
         delta_log = _get_delta(bsd=env.sed_bsd)
 
-        signal('git.updating').send(None)
+        signal.emit('git.updating')
 
         if env.git_use_reset:
             run('git fetch -q')
@@ -53,20 +53,20 @@ def update_git_repo(sender=None, **kwargs):
             run('git checkout %(branch)s' % env)
 
         head = _get_remote_head()
-        signal('git.updated').send(None, delta_log=delta_log, head=head)
+        signal.emit('git.updated', delta_log=delta_log, head=head)
 
         green_alert('Release to %s' % head)
 
         if delta_log:
             green_alert('Release log:\n%s' % delta_log)
 
-def publish_git_repo_as_current_release(sender=None, **kwargs):
+def publish_git_repo_as_current_release(**kwargs):
     with cd(env.path):
         run('cp -r %(path)s/repo %(releases_path)s/_build' % env)
         with cd('%(releases_path)s/_build' % env):
             try:
-                signal('git.building').send(None)
-                signal('git.built').send(None)
+                signal.emit('git.building')
+                signal.emit('git.built')
             except SystemExit:
                 red_alert('New release failed to build, Cleaning up failed build')
                 run('rm -rf %(release_path)s/_build' % env)

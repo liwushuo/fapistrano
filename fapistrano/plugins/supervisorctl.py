@@ -2,6 +2,7 @@
 
 from blinker import signal
 from fabric.api import env, run, show
+from .. import signal
 
 def init():
     if not hasattr(env, 'refresh_supervisor'):
@@ -10,21 +11,21 @@ def init():
     if not hasattr(env, 'wait_before_refreshing'):
         env.wait_before_refreshing = False
 
-    signal('deploy.started').connect(_check_supervisor_config)
-    signal('deploy.published').connect(_restart_service_via_supervisor)
-    signal('deploy.restarting').connect(_restart_service_via_supervisor)
+    signal.register('deploy.started', _check_supervisor_config)
+    signal.register('deploy.published', _restart_service_via_supervisor)
+    signal.register('deploy.restarting', _restart_service_via_supervisor)
 
 def _get_supervisor_conf():
     if not hasattr(env, 'supervisor_conf'):
         env.supervisor_conf = '%(current_path)s/configs/supervisor_%(env)s_%(role)s.conf' % env
     return env.supervisor_conf
 
-def _check_supervisor_config(sender, **kwargs):
+def _check_supervisor_config(**kwargs):
     _get_supervisor_conf()
     run('ln -nfs %(supervisor_conf)s /etc/supervisor/conf.d/%(project_name)s.conf' % env)
     run('supervisorctl reread')
 
-def _restart_service_via_supervisor(sender, **kwargs):
+def _restart_service_via_supervisor(**kwargs):
     with show('output'):
         if not env.refresh_supervisor:
             run('supervisorctl restart %(supervisor_target)s' % env)
