@@ -26,9 +26,8 @@ def first_setup_repo(f):
     # deprecated
     return f
 
-def setup_repo(f):
-    signal.register('git.building', lambda **data: f())
-    return f
+setup_repo = signal.listen('git.building')
+
 
 
 @task
@@ -164,6 +163,7 @@ def debug_env():
 def _check():
     run('mkdir -p %(path)s/{releases,shared/log}' % env)
     run('chmod -R g+w %(shared_path)s' % env)
+    run('mkdir -p %(releases_path)s/%(new_release)s' % env)
 
 def _symlink_current(dest):
     green_alert('Symlinking to current')
