@@ -33,7 +33,8 @@ def _publish_rollback_head_to_slack(sender, **kwargs):
 
 def _publish_updated_delta_to_slack(sender, **kwargs):
     delta_log = kwargs.get('delta_log')
-    payload = _format_release_payload(delta_log)
+    remote_head = kwargs.get('head')
+    payload = _format_release_payload(remote_head, delta_log)
     signal('slack.send').send(None, payload=payload)
 
 def _format_delta_payload(delta_log):
@@ -100,8 +101,8 @@ def _format_git_commit(commit):
         return commit
     return u'<%s%s|%s>' % (git_web, commit, commit)
 
-def _format_release_payload(delta_log):
+def _format_release_payload(remote_head, delta_log):
     notes = '[%s] Deploy to %s. Please check if it works properly.' % (
-        _format_target(), _format_git_commit(_get_remote_head())
+        _format_target(), _format_git_commit(remote_head)
     )
     return _format_common_gitlog_payload(delta_log, notes)
