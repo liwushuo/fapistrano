@@ -5,6 +5,12 @@ from fabric.api import cd, env, run, local, task
 from ..utils import green_alert
 
 def init():
+    if not hasattr(env, 'git_use_reset'):
+        env.git_use_reset = False
+
+    if not hasattr(env, 'sed_bsd'):
+        env.sed_bsd = True
+
     signal('deploy.delta.publishing').connect(publish_git_delta)
     signal('deploy.head.publishing').connect(publish_git_head)
     signal('deploy.reverted').connect(check_reverted_git_repo)
