@@ -72,7 +72,7 @@ def publish_git_repo_as_current_release(**kwargs):
                 run('rm -rf %(release_path)s/_build' % env)
                 exit()
         with cd('%(releases_path)s' % env):
-            run('mv _build %(new_release)s' % env)
+            run('cp -r _build/* %(new_release)s' % env)
 
 def _clone_git_repo(repo, branch='master'):
     green_alert('Cloning the latest code')
