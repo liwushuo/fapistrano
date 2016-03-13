@@ -16,7 +16,7 @@ def init():
     signal('deploy.head.publishing').connect(publish_git_head)
     signal('deploy.reverted').connect(log_reverted_revision)
     signal('deploy.updating').connect(update_git_repo)
-    signal('deploy.publishing').connect(publish_git_repo_as_current_release)
+    signal('deploy.updated').connect(publish_git_repo_as_current_release)
 
 def publish_git_delta(sender=None, **kwargs):
     delta_log = _get_delta()
