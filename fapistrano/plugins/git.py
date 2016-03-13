@@ -13,7 +13,7 @@ def init():
 
     signal('deploy.delta.publishing').connect(publish_git_delta)
     signal('deploy.head.publishing').connect(publish_git_head)
-    signal('deploy.reverted').connect(check_reverted_git_repo)
+    signal('deploy.reverted').connect(log_reverted_revision)
     signal('deploy.updating').connect(update_git_repo)
 
 def publish_git_delta(sender=None, **kwargs):
@@ -29,9 +29,9 @@ def publish_git_head(sender=None, **kwargs):
     green_alert('Get head: \n%s' % head)
     signal('git.head.publishing').send(None, head=head)
 
-def check_reverted_git_repo(sender=None, **kwargs):
+def log_reverted_revision(sender=None, **kwargs):
     head = _get_remote_head()
-    green_alert('Get head: \n%s' % head)
+    green_alert('Rollback to %s' % head)
     signal('git.reverted').send(None, head=head)
 
 def update_git_repo(sender=None, **kwargs):
