@@ -132,20 +132,28 @@ def release(branch=None):
     green_alert('Starting')
     signal('deploy.starting').send(None)
     _check()
+
+    green_alert('Started')
     signal('deploy.started').send(None)
 
     green_alert('Updating')
     signal('deploy.updating').send(None)
+
+    green_alert('Updated')
     signal('deploy.updated').send(None)
 
     green_alert('Publishing')
     signal('deploy.publishing').send(None)
     _symlink_new_release()
+
+    green_alert('Published')
     signal('deploy.published').send(None)
 
     green_alert('Finishing')
     signal('deploy.finishing').send(None)
     cleanup()
+
+    green_alert('Finished')
     signal('deploy.finished').send(None)
 
     # TODO: do rollback when restart failed
@@ -154,8 +162,9 @@ def release(branch=None):
 @with_configs
 def resetup_repo():
     with cd('%(current_path)s' % env):
-        green_alert('Setting up repo')
-        setup_repo_func()
+        signal('git.building').send(None)
+        signal('git.built').send(None)
+
 def _check_rollback_to():
     if not env.rollback_to:
         abort('No release to rollback')
