@@ -64,21 +64,9 @@ def delta():
 
 @task
 @with_configs
-def restart(refresh_supervisor=False, wait_before_refreshing=False):
-    with show('output'):
-        if not refresh_supervisor:
-            run('supervisorctl restart %(supervisor_target)s' % env)
-        else:
-            run('supervisorctl stop %(supervisor_target)s' % env)
-            if wait_before_refreshing:
-                raw_input('type any key to refresh supervisor')
-            run('supervisorctl reread')
-            if not run('supervisorctl update'):
-                run('supervisorctl start %(supervisor_target)s' % env)
-
-        # since supervisorctl does not support `supervisorctl status group_name:*` syntax
-        run('supervisorctl status | grep %(project_name)s' % env)
-
+def restart():
+    signal('deploy.restarting').send(None)
+    signal('deploy.restarted').send(None)
     # FIXME: get the status of the service
 
 @task
