@@ -52,6 +52,13 @@ def update_git_repo(sender=None, **kwargs):
 
     signal('git.updated').send(None, delta_log=delta_log, head=head)
 
+def _clone_git_repo(repo, branch='master'):
+    green_alert('Cloning the latest code')
+    run('git clone -q --depth 1 %(repo)s %(path)s/repo' % env)
+
+    with cd('%(path)s/repo' % env):
+        green_alert('Checking out %(branch)s branch' % env)
+        run('git checkout %s' % branch)
 
 def _get_remote_head():
     with cd(env.current_path):
