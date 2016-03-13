@@ -1,28 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import os
-import new
 from datetime import datetime
-import atexit
 
 from fabric.api import runs_once
-from fabric.api import local
 from fabric.api import run
 from fabric.api import env
 from fabric.api import cd
-from fabric.api import prefix
 from fabric.api import task
 from fabric.api import abort
-from fabric.api import parallel
-from fabric.api import show, hide
-from fabric.api import with_settings
-from fabric.colors import green, red, white
 
-import yaml
-import requests
-import json
-
-from .utils import red_alert, green_alert, with_configs
+from .utils import green_alert, with_configs
 from .directory import (
     get_outdated_releases, get_releases_path,
     get_current_release, get_previous_release,
@@ -33,14 +20,11 @@ RELEASE_PATH_FORMAT = '%y%m%d-%H%M%S'
 
 # do not print output by default
 env.show_output = False
-first_setup_repo_func = None
-setup_repo_func = None
+
 
 def first_setup_repo(f):
-    global first_setup_repo_func
-    first_setup_repo_func = f
+    # deprecated
     return f
-
 
 def setup_repo(f):
     signal.register('git.building', lambda **data: f())
@@ -54,6 +38,7 @@ def head():
     # deprecated
     signal.emit('deploy.head.publishing')
     signal.emit('deploy.head.published')
+
 
 @task
 @runs_once
@@ -71,24 +56,11 @@ def restart():
     signal.emit('deploy.restarted')
     # FIXME: get the status of the service
 
-@task
-def _releases():
-    env.releases = sorted(run('ls -x %(releases_path)s' % env).split())
-    env.current_release = run('readlink %(current_path)s' % env).rsplit('/', 1)[1]
-
-    current_index = env.releases.index(env.current_release)
-    if current_index > 1:
-        env.previous_release = env.releases[current_index-1]
-    if len(env.releases) != current_index + 1:
-        env.dirty_releases = env.releases[current_index+1:]
-    env.new_release = datetime.now().strftime(RELEASE_PATH_FORMAT)
-
 
 @task
 @with_configs
 def cleanup_failed():
     green_alert('Cleanning up failed build')
-
     with cd(env.releases_path):
         run('rm -rf _build')
 
@@ -99,6 +71,7 @@ def cleanup_rollback():
     green_alert('Cleaning up %(releases_path)s/%(rollback_from)s' % env)
     run('rm -rf %(releases_path)s/%(rollback_from)s' % env)
 
+
 @task
 @with_configs
 def cleanup():
@@ -106,21 +79,6 @@ def cleanup():
     with cd(get_releases_path()):
         run('rm -rf %s' % ' '.join(get_outdated_releases()))
 
-def _check():
-    run('mkdir -p %(path)s/{releases,shared/log}' % env)
-    run('chmod -R g+w %(shared_path)s' % env)
-
-def _symlink_current(dest):
-    green_alert('Symlinking to current')
-    with cd(env.path):
-        run('ln -nfs %s current' % dest)
-    green_alert('Done. Deployed %s' % dest)
-
-def _symlink_new_release():
-    _symlink_current('%(releases_path)s/%(new_release)s' % env)
-
-def _symlink_rollback():
-    _symlink_current('%(releases_path)s/%(rollback_to)s' % env)
 
 @task
 @with_configs
@@ -156,8 +114,8 @@ def release(branch=None):
 
     green_alert('Finished')
     signal.emit('deploy.finished')
-
     # TODO: do rollback when restart failed
+
 
 @task
 @with_configs
@@ -165,10 +123,6 @@ def resetup_repo():
     with cd('%(current_path)s' % env):
         signal.emit('git.building')
         signal.emit('git.built')
-
-def _check_rollback_to():
-    if not env.rollback_to:
-        abort('No release to rollback')
 
 @task
 @with_configs
@@ -196,9 +150,33 @@ def rollback():
 def debug_output():
     env.show_output = True
 
+
 @task
 @with_configs
 @runs_once
 def debug_env():
     from pprint import pprint
     pprint(env)
+
+
+
+
+def _check():
+    run('mkdir -p %(path)s/{releases,shared/log}' % env)
+    run('chmod -R g+w %(shared_path)s' % env)
+
+def _symlink_current(dest):
+    green_alert('Symlinking to current')
+    with cd(env.path):
+        run('ln -nfs %s current' % dest)
+    green_alert('Done. Deployed %s' % dest)
+
+def _symlink_new_release():
+    _symlink_current('%(releases_path)s/%(new_release)s' % env)
+
+def _symlink_rollback():
+    _symlink_current('%(releases_path)s/%(rollback_to)s' % env)
+
+def _check_rollback_to():
+    if not env.rollback_to:
+        abort('No release to rollback')
