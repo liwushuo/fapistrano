@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from blinker import signal
 from fabric.api import env, run, show
 from .. import signal
 
