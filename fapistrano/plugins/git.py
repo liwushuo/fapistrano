@@ -85,7 +85,8 @@ def _clone_git_repo(repo, branch='master'):
 
 def _get_remote_head():
     with cd(env.current_path):
-        return run("git rev-parse --short HEAD", quiet=True)
+        if exists('.git'):
+            return run("git rev-parse --short HEAD", quiet=True)
 
 
 def _get_delta(upstream='upstream', bsd=True):
