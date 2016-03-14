@@ -76,7 +76,9 @@ def cleanup_rollback():
 def cleanup():
     green_alert('Cleanning up old release(s)')
     with cd(get_releases_path()):
-        run('rm -rf %s' % ' '.join(get_outdated_releases()))
+        outdated_releases = get_outdated_releases()
+        if outdated_releases:
+            run('rm -rf %s' % ' '.join(outdated_releases))
 
 
 @task
