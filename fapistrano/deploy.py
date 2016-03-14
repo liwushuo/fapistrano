@@ -16,8 +16,6 @@ from .directory import (
 )
 from . import signal
 
-RELEASE_PATH_FORMAT = '%y%m%d-%H%M%S'
-
 # do not print output by default
 env.show_output = False
 
@@ -26,7 +24,7 @@ def first_setup_repo(f):
     # deprecated
     return f
 
-setup_repo = signal.listen('git.building')
+setup_repo = signal.listen('deploy.updated')
 
 
 
@@ -83,9 +81,7 @@ def cleanup():
 
 @task
 @with_configs
-def release(branch=None):
-    env.branch = branch if branch else env.branch
-    env.new_release = datetime.now().strftime(RELEASE_PATH_FORMAT)
+def release():
     green_alert('Starting')
     signal.emit('deploy.starting')
     _start_deploy()
