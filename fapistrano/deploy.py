@@ -8,11 +8,13 @@ from fabric.api import env
 from fabric.api import cd
 from fabric.api import task
 from fabric.api import abort
-
+from fabric.contrib.files import exists
 from .utils import green_alert, with_configs
 from .directory import (
     get_outdated_releases, get_releases_path,
     get_current_release, get_previous_release,
+    get_linked_files, get_linked_file_dirs,
+    get_linked_dirs, get_linked_dir_parents,
 )
 from . import signal
 
@@ -166,11 +168,32 @@ def debug_env():
 
 def _start_deploy():
     _check()
+    _symlink_shared_files()
 
 def _check():
     run('mkdir -p %(path)s/{releases,shared/log}' % env)
     run('chmod -R g+w %(shared_path)s' % env)
     run('mkdir -p %(releases_path)s/%(new_release)s' % env)
+    for linked_file_dir in get_linked_file_dirs():
+        dir = '%(releases_path)s/%(new_release)s/' % env
+        dir += linked_file_dir
+        run('mkdir -p %s' % dir)
+    for linked_dir_parent in get_linked_dir_parents():
+        dir = '%(releases_path)s/%(new_release)s/' % env
+        dir += linked_dir_parent
+        run('mkdir -p %s' % dir)
+
+def _symlink_shared_files():
+    for linked_file in get_linked_files():
+        env.linked_file = linked_file
+        if exists('%(releases_path)s/%(new_release)s/%(linked_file)s' % env):
+            run('rm %(releases_path)s/%(new_release)s/%(linked_file)s' % env)
+        run('ln -nfs %(shared_path)s/%(linked_file)s %(releases_path)s/%(new_release)s/%(linked_file)s' % env)
+    for linked_dir in get_linked_dirs():
+        env.linked_dir = linked_dir
+        if exists('%(releases_path)s/%(new_release)s/%(linked_dir)s' % env):
+            run('rm -rf %(releases_path)s/%(new_release)s/%(linked_dir)s' % env)
+        run('ln -nfs  %(shared_path)s/%(linked_dir)s %(releases_path)s/%(new_release)s/%(linked_dir)s' % env)
 
 def _symlink_current(dest):
     with cd(env.path):
