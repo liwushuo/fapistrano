@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from functools import wraps
+import os
 from fabric.api import run, env
 
 def set_path():
@@ -96,3 +96,27 @@ def get_outdated_releases():
     if not hasattr(env, 'outdated_releases'):
         set_outdated_releases()
     return env.outdated_releases
+
+def set_linked_files():
+    env.linked_files = []
+
+def get_linked_files():
+    if not hasattr(env, 'linked_files'):
+        set_linked_files()
+    return env.linked_files
+
+def set_linked_dirs():
+    env.linked_dirs = []
+
+def get_linked_dirs():
+    if not hasattr(env, 'linked_dirs'):
+        set_linked_dirs()
+    return env.linked_dirs
+
+def get_linked_file_dirs():
+    linked_files = get_linked_files()
+    return set(map(os.path.dirname, linked_files))
+
+def get_linked_dir_parents():
+    linked_dirs = get_linked_dirs()
+    return set(map(os.path.dirname, linked_dirs))
