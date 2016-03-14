@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime
 from functools import wraps
 
 from fabric.api import env, show, hide, abort
-from fabric.colors import green, red, white
+from fabric.colors import green, red, white, yellow
 
+RELEASE_PATH_FORMAT = '%y%m%d-%H%M%S'
 
 def red_alert(msg, bold=True):
     print red('===>', bold=bold), white(msg, bold=bold)
@@ -57,6 +59,7 @@ def _apply_env_role_config():
     env.releases_path = '%(path)s/releases' % env
     env.shared_path = '%(path)s/shared' % env
     env.activate = 'source ~/.virtualenvs/%(project_name)s/bin/activate' % env
+    env.new_release = datetime.now().strftime(RELEASE_PATH_FORMAT)
 
 
 def with_configs(func):
