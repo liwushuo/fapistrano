@@ -12,6 +12,12 @@ def init():
     if not hasattr(env, 'sed_bsd'):
         env.sed_bsd = True
 
+    if not hasattr(env, 'git_show_delta'):
+        env.git_show_delta = False
+
+    if not hasattr(env, 'branch'):
+        env.branch = 'master'
+
     signal.register('deploy.delta.publishing', publish_git_delta)
     signal.register('deploy.head.publishing', publish_git_head)
     signal.register('deploy.reverted', log_reverted_revision)
