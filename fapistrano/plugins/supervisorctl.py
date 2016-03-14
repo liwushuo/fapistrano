@@ -38,4 +38,4 @@ def _restart_service_via_supervisor(**kwargs):
                 run('supervisorctl start %(supervisor_target)s' % env)
 
         # since supervisorctl does not support `supervisorctl status group_name:*` syntax
-        run('supervisorctl status | grep %(project_name)s' % env)
+        run('supervisorctl status %(supervisor_target)s' % env)
