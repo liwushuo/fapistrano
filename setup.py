@@ -15,6 +15,10 @@ setup(
         'requests',
         'PyYaml',
     ],
+    entry_points='''
+        [console_scripts]
+        fap=fapistrano.cli:fap
+    '''
     classifiers=[
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
