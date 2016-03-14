@@ -8,3 +8,8 @@ def init():
     for plugin in env.plugins:
         mod = import_module(plugin)
         mod.init()
+
+def init_cli(conf):
+    for key, value in conf.items():
+        setattr(env, key, value)
+    init()
