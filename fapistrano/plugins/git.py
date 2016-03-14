@@ -62,7 +62,8 @@ def update_git_repo(**kwargs):
 
 def publish_git_repo_as_current_release(**kwargs):
     with cd(env.path):
-        run('cp -r %(path)s/repo %(releases_path)s/_build' % env)
+        run('mkdir -p %(releases_path)s/_build' % env)
+        run('cp -r %(path)s/repo/* %(releases_path)s/_build' % env)
         with cd('%(releases_path)s/_build' % env):
             try:
                 signal.emit('git.building')
