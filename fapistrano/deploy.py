@@ -125,22 +125,33 @@ def resetup_repo():
 @task
 @with_configs
 def rollback():
+    green_alert('Starting')
     signal.emit('deploy.starting')
-    green_alert('Rolling back to last release')
     env.rollback_from = get_current_release()
     env.rollback_to = get_previous_release()
     _check_rollback_to()
+
+    green_alert('Started')
     signal.emit('deploy.started')
 
+    green_alert('Reverting')
     signal.emit('deploy.reverting')
+
+    green_alert('Reverted')
     signal.emit('deploy.reverted')
 
+    green_alert('Publishing')
     signal.emit('deploy.publishing')
     _symlink_rollback()
+
+    green_alert('Published')
     signal.emit('deploy.published')
 
+    green_alert('Finishing rollback')
     signal.emit('deploy.finishing_rollback')
     cleanup_rollback()
+
+    green_alert('Finished')
     signal.emit('deploy.finished')
 
 
