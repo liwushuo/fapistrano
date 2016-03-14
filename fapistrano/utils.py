@@ -14,6 +14,10 @@ def green_alert(msg, bold=True):
     print green('===>', bold=bold), white(msg, bold=bold)
 
 
+def yellow_alert(msg, bold=True):
+    print yellow('===>', bold=bold), white(msg, bold=bold)
+
+
 def _apply_checking():
     stage = env.get('env')
     role = env.get('role')
