@@ -84,9 +84,6 @@ def cleanup():
 def release(branch=None):
     env.branch = branch if branch else env.branch
     env.new_release = datetime.now().strftime(RELEASE_PATH_FORMAT)
-
-    green_alert('Deploying new release on %(branch)s branch' % env)
-
     green_alert('Starting')
     signal.emit('deploy.starting')
     _start_deploy()
@@ -167,10 +164,8 @@ def _check():
     run('mkdir -p %(releases_path)s/%(new_release)s' % env)
 
 def _symlink_current(dest):
-    green_alert('Symlinking to current')
     with cd(env.path):
         run('ln -nfs %s current' % dest)
-    green_alert('Done. Deployed %s' % dest)
 
 def _symlink_new_release():
     _symlink_current('%(releases_path)s/%(new_release)s' % env)
