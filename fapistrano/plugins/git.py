@@ -24,7 +24,6 @@ def init():
     signal.register('deploy.reverted', log_reverted_revision)
     signal.register('deploy.started', check_repo)
     signal.register('deploy.updating', update_git_repo)
-    signal.register('deploy.updated', publish_git_repo_as_current_release)
 
 def publish_git_delta(**kwargs):
     head = _get_remote_head()
@@ -49,37 +48,7 @@ def log_reverted_revision(**kwargs):
 
 def update_git_repo(**kwargs):
     if not exists('%(path)s/repo' % env):
-
-    with cd('%(path)s/repo' % env):
-        head = _get_remote_head()
-        if head:
-            green_alert('Current version: %s' % head)
-            delta_log = _get_delta(head, bsd=env.sed_bsd)
-        else:
-            yellow_alert('No current version detected.')
-            delta_log = None
-
-        green_alert('Git Updating')
-        signal.emit('git.updating')
         _clone()
-
-        if env.git_use_reset:
-            run('git fetch -q')
-            run('git reset --hard origin/%(branch)s' % env)
-        else:
-            run('git pull -q')
-            run('git checkout %(branch)s' % env)
-
-        updated_head = _get_remote_head()
-        green_alert('Git updated')
-        signal.emit('git.updated', delta_log=delta_log, head=updated_head)
-
-        green_alert('Release to %s' % updated_head)
-
-        if delta_log:
-            green_alert('Release log:\n%s' % delta_log)
-
-def publish_git_repo_as_current_release(**kwargs):
     _update()
 
 
