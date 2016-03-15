@@ -77,23 +77,7 @@ def update_git_repo(**kwargs):
             green_alert('Release log:\n%s' % delta_log)
 
 def publish_git_repo_as_current_release(**kwargs):
-    with cd(env.path):
-        if exists('%(releases_path)s/_build' % env):
-            run('rm -rf %(releases_path)s/_build' % env)
-        run('cp -R %(path)s/repo/ %(releases_path)s/_build' % env)
-        with cd('%(releases_path)s/_build' % env):
-            try:
-                green_alert('Git building')
-                signal.emit('git.building')
-
-                green_alert('Git built')
-                signal.emit('git.built')
-            except SystemExit:
-                red_alert('New release failed to build, Cleaning up failed build')
-                run('rm -rf %(release_path)s/_build' % env)
-                exit()
-        with cd('%(releases_path)s' % env):
-            run('cp -R _build/*  %(new_release)s' % env)
+    _update()
 
 
 def _get_remote_head():
@@ -120,3 +104,15 @@ def _clone():
             '--no-single-branch %(repo)s %(path)s/repo' % env)
     else:
         run('git clone --mirror %(repo)s %(path)s/repo' % env)
+
+
+def _update():
+    with cd('%(path)s/repo' % env):
+        if hasattr(env, 'git_shallow_clone') and env.git_shallow_clone:
+            run(
+                'git fetch '
+                '--depth %(git_shallow_clone)s '
+                'origin %(branch)s' % env
+            )
+        else:
+            run('git remote update --prune')
