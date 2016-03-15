@@ -62,11 +62,23 @@ def _get_delta(current_version, upstream='origin', bsd=True):
         return
 
     local('/usr/bin/env git fetch -q %s' % upstream)
-    #FIXME
     return local(
-        '/usr/bin/env git log --reverse --pretty="%%h %%s: %%b" --merges %s..%s/master | '
-        '/usr/bin/env sed -%s "s/Merge pull request #([0-9]+) from ([^/]+)\\/[^:]+/#\\1\\/\\2/"' % (
-            current_version, upstream, 'E' if bsd else 'r'), capture=True).decode('utf8')
+        '/usr/bin/env git log '
+        '--reverse '
+        '--pretty="%%h %%s: %%b" '
+        '--merges %s..%s/master | '
+
+        '/usr/bin/env sed -%s '
+        '"s/Merge pull request #([0-9]+) from ([^/]+)\\/[^:]+/#\\1\\/\\2/"'
+        % (
+            current_version,
+            upstream,
+            'E' if bsd else 'r'
+        ),
+        capture=True
+    ).decode('utf8')
+
+
 def _check():
     with cd('%(path)s/repo' % env):
         run('git ls-remote --heads %(repo)s' % env)
