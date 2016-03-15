@@ -1,40 +1,37 @@
 # -*- coding: utf-8 -*-
 
-from fabric.api import env, run, show
-from .. import signal
+from fabric.api import env, run, show, hide
+from .. import signal, configuration
 
 def init():
-    if not hasattr(env, 'refresh_supervisor'):
-        env.refresh_supervisor = False
-
-    if not hasattr(env, 'wait_before_refreshing'):
-        env.wait_before_refreshing = False
-
+    configuration.setdefault('supervisor_refresh', False)
+    configuration.setdefault('supervisor_output', False)
+    configuration.setdefault('supervisor_check_status', False)
+    configuration.setdefault(
+        'supervisor_conf',
+        '%(shared_path)s/configs/supervisor_%(env)s_%(role)s.conf'
+    )
     signal.register('deploy.started', _check_supervisor_config)
     signal.register('deploy.published', _restart_service_via_supervisor)
     signal.register('deploy.restarting', _restart_service_via_supervisor)
 
-def _get_supervisor_conf():
-    if not hasattr(env, 'supervisor_conf'):
-        env.supervisor_conf = '%(current_path)s/configs/supervisor_%(env)s_%(role)s.conf' % env
-    return env.supervisor_conf
-
 def _check_supervisor_config(**kwargs):
-    _get_supervisor_conf()
+    run('test -e %(supervisor_conf)s' % env)
     run('ln -nfs %(supervisor_conf)s /etc/supervisor/conf.d/%(project_name)s.conf' % env)
     run('supervisorctl reread')
 
 def _restart_service_via_supervisor(**kwargs):
-    with show('output'):
-        if not env.refresh_supervisor:
-            run('supervisorctl restart %(supervisor_target)s' % env)
-        else:
+    output = show if env.supervisor_output else hide
+    with output('output'):
+        if env.supervisor_refresh:
             run('supervisorctl stop %(supervisor_target)s' % env)
-            if env.wait_before_refreshing:
-                raw_input('type any key to refresh supervisor')
             run('supervisorctl reread')
             if not run('supervisorctl update'):
                 run('supervisorctl start %(supervisor_target)s' % env)
+        else:
+            run('supervisorctl restart %(supervisor_target)s' % env)
 
-        # since supervisorctl does not support `supervisorctl status group_name:*` syntax
-        run('supervisorctl status %(supervisor_target)s' % env)
+        # refresh group need supervisor>=3.20
+    if env.supervisor_check_status:
+        with show('output'):
+            run('supervisorctl status %(supervisor_target)s' % env)
