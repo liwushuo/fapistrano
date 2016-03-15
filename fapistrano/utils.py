@@ -73,6 +73,7 @@ def _apply_env_to_configurations():
 def with_configs(func):
     @wraps(func)
     def wrapped(*args, **kwargs):
+        configuration.set_default_configurations()
         _apply_checking()
         _apply_env_to_configurations()
         output_func = show if env.show_output else hide
