@@ -45,7 +45,7 @@ def restart(role, env):
     fabenv.role = role
     fabenv.env = env
     _apply_env_role_config()
-    execute(deploy.rollback)
+    execute(deploy.restart)
 
 if __name__ == '__main__':
     fap()
