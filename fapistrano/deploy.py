@@ -1,20 +1,18 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
-
-from fabric.api import runs_once
-from fabric.api import run
-from fabric.api import env
-from fabric.api import cd
-from fabric.api import task
-from fabric.api import abort
+from fabric.api import (
+    runs_once, run, env, cd,
+    task, abort,
+)
 from fabric.contrib.files import exists
-from .utils import green_alert, with_configs
+
+from .utils import green_alert
+from .configuration import with_configs
 from .directory import (
-    get_outdated_releases, get_releases_path,
     get_current_release, get_previous_release,
     get_linked_files, get_linked_file_dirs,
     get_linked_dirs, get_linked_dir_parents,
+    get_outdated_releases,
 )
 from . import signal
 
