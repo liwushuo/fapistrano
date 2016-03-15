@@ -1,15 +1,21 @@
 # -*- coding: utf-8 -*-
 
+
 import click
 import yaml
+from os import environ
 from fabric.api import env as fabenv, local, execute
 from fapistrano.app import init_cli
 from fapistrano.utils import with_configs, register_role, register_env, _apply_env_role_config
 from fapistrano import deploy
 
 @click.group()
-@click.option('-d', '--deployfile', default='deploy.yml')
+@click.option('-d', '--deployfile')
 def fap(deployfile):
+    if environ.get('DEPLOY_FILE') and not deployfile:
+        deployfile = environ.get('DEPLOY_FILE')
+    elif not deployfile:
+        deployfile = './deploy.yml'
     with open(deployfile, 'rb') as f:
         conf = yaml.load(f.read())
         init_cli(conf)
