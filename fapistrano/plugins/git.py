@@ -22,6 +22,7 @@ def init():
     signal.register('deploy.head.publishing', publish_git_head)
 
     signal.register('deploy.reverted', log_reverted_revision)
+    signal.register('deploy.started', check_repo)
     signal.register('deploy.updating', update_git_repo)
     signal.register('deploy.updated', publish_git_repo_as_current_release)
 
@@ -33,6 +34,8 @@ def publish_git_delta(**kwargs):
         return
     green_alert('Get delta:\n%s' % delta_log)
     signal.emit('git.delta.publishing', head=head, delta_log=delta_log)
+def check_repo(**kwargs):
+    _check()
 
 def publish_git_head(**kwargs):
     head = _get_remote_head()
@@ -95,6 +98,11 @@ def _get_delta(current_version, upstream='origin', bsd=True):
         '/usr/bin/env git log --reverse --pretty="%%h %%s: %%b" --merges %s..%s/master | '
         '/usr/bin/env sed -%s "s/Merge pull request #([0-9]+) from ([^/]+)\\/[^:]+/#\\1\\/\\2/"' % (
             current_version, upstream, 'E' if bsd else 'r'), capture=True).decode('utf8')
+def _check():
+    with cd('%(path)s/repo' % env):
+        run('git ls-remote --heads %(repo)s' % env)
+
+
 def _clone():
     if exists('%(path)s/repo/HEAD'):
         abort('Repo has cloned already!')
