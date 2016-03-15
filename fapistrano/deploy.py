@@ -18,34 +18,6 @@ from .directory import (
 )
 from . import signal
 
-# do not print output by default
-env.show_output = False
-
-
-def first_setup_repo(f):
-    # deprecated
-    return f
-
-setup_repo = signal.listen('deploy.updated')
-
-
-
-@task
-@runs_once
-@with_configs
-def head():
-    # deprecated
-    signal.emit('deploy.head.publishing')
-    signal.emit('deploy.head.published')
-
-
-@task
-@runs_once
-@with_configs
-def delta():
-    # deprecated
-    signal.emit('deploy.delta.publishing')
-    signal.emit('deploy.delta.published')
 
 
 @task
@@ -53,33 +25,6 @@ def delta():
 def restart():
     signal.emit('deploy.restarting')
     signal.emit('deploy.restarted')
-    # FIXME: get the status of the service
-
-
-@task
-@with_configs
-def cleanup_failed():
-    green_alert('Cleanning up failed build')
-    with cd(env.releases_path):
-        run('rm -rf _build')
-
-
-@task
-@with_configs
-def cleanup_rollback():
-    env.rollback_from = get_current_release()
-    green_alert('Cleaning up %(releases_path)s/%(rollback_from)s' % env)
-    run('rm -rf %(releases_path)s/%(rollback_from)s' % env)
-
-
-@task
-@with_configs
-def cleanup():
-    green_alert('Cleanning up old release(s)')
-    with cd(get_releases_path()):
-        outdated_releases = get_outdated_releases()
-        if outdated_releases:
-            run('rm -rf %s' % ' '.join(outdated_releases))
 
 
 @task
@@ -107,11 +52,10 @@ def release():
 
     green_alert('Finishing')
     signal.emit('deploy.finishing')
-    cleanup()
+    _cleanup()
 
     green_alert('Finished')
     signal.emit('deploy.finished')
-    # TODO: do rollback when restart failed
 
 
 @task
@@ -127,7 +71,8 @@ def rollback():
     green_alert('Starting')
     signal.emit('deploy.starting')
     env.rollback_from = get_current_release()
-    env.release_path = get_previous_release()
+    env.rollback_to = get_previous_release()
+    env.release_path = '%(releases_path)s/%(rollback_to)s' % env
     _check_rollback_to()
 
     green_alert('Started')
@@ -148,7 +93,7 @@ def rollback():
 
     green_alert('Finishing rollback')
     signal.emit('deploy.finishing_rollback')
-    cleanup_rollback()
+    _cleanup_rollback()
 
     green_alert('Finished')
     signal.emit('deploy.finished')
@@ -174,27 +119,27 @@ def _start_deploy():
 def _check():
     run('mkdir -p %(path)s/{releases,shared/log}' % env)
     run('chmod -R g+w %(shared_path)s' % env)
-    run('mkdir -p %(releases_path)s/%(new_release)s' % env)
+    run('mkdir -p %(release_path)s' % env)
     for linked_file_dir in get_linked_file_dirs():
-        dir = '%(releases_path)s/%(new_release)s/' % env
+        dir = '%(release_path)s/' % env
         dir += linked_file_dir
         run('mkdir -p %s' % dir)
     for linked_dir_parent in get_linked_dir_parents():
-        dir = '%(releases_path)s/%(new_release)s/' % env
+        dir = '%(release_path)s/' % env
         dir += linked_dir_parent
         run('mkdir -p %s' % dir)
 
 def _symlink_shared_files():
     for linked_file in get_linked_files():
         env.linked_file = linked_file
-        if exists('%(releases_path)s/%(new_release)s/%(linked_file)s' % env):
-            run('rm %(releases_path)s/%(new_release)s/%(linked_file)s' % env)
-        run('ln -nfs %(shared_path)s/%(linked_file)s %(releases_path)s/%(new_release)s/%(linked_file)s' % env)
+        if exists('%(release_path)s/%(linked_file)s' % env):
+            run('rm %(release_path)s/%(linked_file)s' % env)
+        run('ln -nfs %(shared_path)s/%(linked_file)s %(release_path)s/%(linked_file)s' % env)
     for linked_dir in get_linked_dirs():
         env.linked_dir = linked_dir
-        if exists('%(releases_path)s/%(new_release)s/%(linked_dir)s' % env):
-            run('rm -rf %(releases_path)s/%(new_release)s/%(linked_dir)s' % env)
-        run('ln -nfs  %(shared_path)s/%(linked_dir)s %(releases_path)s/%(new_release)s/%(linked_dir)s' % env)
+        if exists('%(release_path)s/%(linked_dir)s' % env):
+            run('rm -rf %(release_path)s/%(linked_dir)s' % env)
+        run('ln -nfs  %(shared_path)s/%(linked_dir)s %(release_path)s/%(linked_dir)s' % env)
 
 
 def _symlink_current():
@@ -203,3 +148,12 @@ def _symlink_current():
 def _check_rollback_to():
     if not env.release_path:
         abort('No release to rollback')
+
+def _cleanup_rollback():
+    run('rm -rf %(releases_path)s/%(rollback_from)s' % env)
+
+def _cleanup():
+    with cd(env.releases_path):
+        outdated_releases = get_outdated_releases()
+        if outdated_releases:
+            run('rm -rf %s' % ' '.join(outdated_releases))
