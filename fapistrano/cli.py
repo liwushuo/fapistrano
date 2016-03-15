@@ -4,9 +4,9 @@
 import click
 import yaml
 from os import environ
-from fabric.api import env as fabenv, local, execute
+from fabric.api import env, execute
 from fapistrano.app import init_cli
-from fapistrano.utils import with_configs, register_role, register_env, _apply_env_role_config
+from fapistrano.configuration import apply_env
 from fapistrano import deploy
 
 @click.group()
@@ -22,29 +22,29 @@ def fap(deployfile):
 
 @fap.command()
 @click.option('-r', '--role', required=True, help='deploy role, for example: production, staging')
-@click.option('-e', '--env', required=True, help='deploy env, for example: app, worker, cron')
-def release(role, env):
-    fabenv.role = role
-    fabenv.env = env
-    _apply_env_role_config()
+@click.option('-s', '--stage', required=True, help='deploy stage, for example: app, worker, cron')
+def release(role, stage):
+    env.role = role
+    env.stage = stage
+    apply_env(stage, role)
     execute(deploy.release)
 
 @fap.command()
 @click.option('-r', '--role', required=True, help='deploy role, for example: production, staging')
-@click.option('-e', '--env', required=True, help='deploy env, for example: app, worker, cron')
-def rollback(role, env):
-    fabenv.role = role
-    fabenv.env = env
-    _apply_env_role_config()
+@click.option('-s', '--stage', required=True, help='deploy stage, for example: app, worker, cron')
+def rollback(role, stage):
+    env.role = role
+    env.stage = stage
+    apply_env(stage, role)
     execute(deploy.rollback)
 
 @fap.command()
 @click.option('-r', '--role', required=True, help='deploy role, for example: production, staging')
-@click.option('-e', '--env', required=True, help='deploy env, for example: app, worker, cron')
-def restart(role, env):
-    fabenv.role = role
-    fabenv.env = env
-    _apply_env_role_config()
+@click.option('-s', '--stage', required=True, help='deploy stage, for example: app, worker, cron')
+def restart(role, stage):
+    env.role = role
+    env.stage = stage
+    apply_env(stage, role)
     execute(deploy.restart)
 
 if __name__ == '__main__':
