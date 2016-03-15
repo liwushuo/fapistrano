@@ -46,7 +46,6 @@ def log_reverted_revision(**kwargs):
 
 def update_git_repo(**kwargs):
     if not exists('%(path)s/repo' % env):
-        _clone_git_repo(env.repo, env.branch)
 
     with cd('%(path)s/repo' % env):
         head = _get_remote_head()
@@ -59,6 +58,7 @@ def update_git_repo(**kwargs):
 
         green_alert('Git Updating')
         signal.emit('git.updating')
+        _clone()
 
         if env.git_use_reset:
             run('git fetch -q')
@@ -95,13 +95,6 @@ def publish_git_repo_as_current_release(**kwargs):
         with cd('%(releases_path)s' % env):
             run('cp -R _build/*  %(new_release)s' % env)
 
-def _clone_git_repo(repo, branch='master'):
-    green_alert('Cloning the latest code')
-    run('git clone -q --depth 1 %(repo)s %(path)s/repo' % env)
-
-    with cd('%(path)s/repo' % env):
-        green_alert('Checking out %(branch)s branch' % env)
-        run('git checkout %s' % branch)
 
 def _get_remote_head():
     if exists('.git'):
@@ -118,3 +111,12 @@ def _get_delta(current_version, upstream='origin', bsd=True):
         '/usr/bin/env git log --reverse --pretty="%%h %%s: %%b" --merges %s..%s/master | '
         '/usr/bin/env sed -%s "s/Merge pull request #([0-9]+) from ([^/]+)\\/[^:]+/#\\1\\/\\2/"' % (
             current_version, upstream, 'E' if bsd else 'r'), capture=True).decode('utf8')
+def _clone():
+    if exists('%(path)s/repo/HEAD'):
+        abort('Repo has cloned already!')
+
+    if hasattr(env, 'git_shallow_clone') and env.git_shallow_clone:
+        run('git clone --mirror --depth %(git_shallow_clone)s '
+            '--no-single-branch %(repo)s %(path)s/repo' % env)
+    else:
+        run('git clone --mirror %(repo)s %(path)s/repo' % env)
