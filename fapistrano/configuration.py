@@ -1,22 +1,41 @@
 # -*- coding: utf-8 -*-
 
 import re
-from fabric.api import env
+from functools import wraps
+from datetime import datetime
+from fabric.api import env, abort, show, hide
 
-def get(key):
-    definition = getattr(env, key)
-    if callable(definition):
-        return definition()
-    else:
-        return definition % env
 
-def format(string):
-    keys = re.findall(r'%\(([^)]*)\)', string)
-    context = {key: get(key) for key in keys}
-    return string % context
+def format_definition():
 
-def setdefault(key, value):
-    if not hasattr(env, key):
+    def _format(key, defs, cals):
+        if key in cals:
+            return cals[key]
+        elif not isinstance(defs[key], str):
+            cals[key] = defs[key]
+            return defs[key]
+        else:
+            keys = re.findall(r'%\(([^)]*)\)', defs[key])
+            ctx = {
+                k: _format(k, defs, cals)
+                for k in keys
+            }
+            cals[key] = defs[key] % ctx
+            return cals[key]
+
+    defs = dict(env.items())
+    cals = {}
+
+    for key in defs:
+         _format(key, defs, cals)
+
+    return cals
+
+
+def setdefault(key, value, force=False):
+    if force:
+        setattr(env, key, value)
+    elif not hasattr(env, key):
         setattr(env, key, value)
 
 def set_default_configurations():
