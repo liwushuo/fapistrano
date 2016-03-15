@@ -20,7 +20,7 @@ def setdefault(key, value):
         setattr(env, key, value)
 
 def set_default_configurations():
-    setdefault('show_output', True)
+    setdefault('show_output', False)
     setdefault('user', 'deploy')
     setdefault('use_ssh_config', True)
     setdefault('path', '/home/%(user)s/www/%(project_name)s')
