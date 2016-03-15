@@ -67,6 +67,7 @@ def cleanup_failed():
 @task
 @with_configs
 def cleanup_rollback():
+    env.rollback_from = get_current_release()
     green_alert('Cleaning up %(releases_path)s/%(rollback_from)s' % env)
     run('rm -rf %(releases_path)s/%(rollback_from)s' % env)
 
@@ -99,7 +100,7 @@ def release():
 
     green_alert('Publishing')
     signal.emit('deploy.publishing')
-    _symlink_new_release()
+    _symlink_current()
 
     green_alert('Published')
     signal.emit('deploy.published')
@@ -126,7 +127,7 @@ def rollback():
     green_alert('Starting')
     signal.emit('deploy.starting')
     env.rollback_from = get_current_release()
-    env.rollback_to = get_previous_release()
+    env.release_path = get_previous_release()
     _check_rollback_to()
 
     green_alert('Started')
@@ -140,7 +141,7 @@ def rollback():
 
     green_alert('Publishing')
     signal.emit('deploy.publishing')
-    _symlink_rollback()
+    _symlink_current()
 
     green_alert('Published')
     signal.emit('deploy.published')
@@ -195,16 +196,10 @@ def _symlink_shared_files():
             run('rm -rf %(releases_path)s/%(new_release)s/%(linked_dir)s' % env)
         run('ln -nfs  %(shared_path)s/%(linked_dir)s %(releases_path)s/%(new_release)s/%(linked_dir)s' % env)
 
-def _symlink_current(dest):
-    with cd(env.path):
-        run('ln -nfs %s current' % dest)
 
-def _symlink_new_release():
-    _symlink_current('%(releases_path)s/%(new_release)s' % env)
-
-def _symlink_rollback():
-    _symlink_current('%(releases_path)s/%(rollback_to)s' % env)
+def _symlink_current():
+    run('ln -nfs %(release_path)s %(current_path)s' % env)
 
 def _check_rollback_to():
-    if not env.rollback_to:
+    if not env.release_path:
         abort('No release to rollback')
