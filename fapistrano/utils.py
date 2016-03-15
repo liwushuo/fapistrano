@@ -5,6 +5,7 @@ from functools import wraps
 
 from fabric.api import env, show, hide, abort
 from fabric.colors import green, red, white, yellow
+from . import configuration
 
 RELEASE_PATH_FORMAT = '%y%m%d-%H%M%S'
 
@@ -60,12 +61,20 @@ def _apply_env_role_config():
     env.shared_path = '%(path)s/shared' % env
     env.activate = 'source ~/.virtualenvs/%(project_name)s/bin/activate' % env
     env.new_release = datetime.now().strftime(RELEASE_PATH_FORMAT)
+    env.release_path = '%(releases_path)s/%(new_release)s' % env
 
+def _apply_env_to_configurations():
+    for env_item in env:
+        if not isinstance(getattr(env, env_item), str):
+            continue
+        env_value = configuration.format(getattr(env, env_item))
+        setattr(env, env_item, env_value)
 
 def with_configs(func):
     @wraps(func)
     def wrapped(*args, **kwargs):
         _apply_checking()
+        _apply_env_to_configurations()
         output_func = show if env.show_output else hide
         with output_func('output'):
             ret = func(*args, **kwargs)
