@@ -7,9 +7,10 @@ def init():
     configuration.setdefault('supervisor_refresh', False)
     configuration.setdefault('supervisor_output', False)
     configuration.setdefault('supervisor_check_status', False)
+    configuration.setdefault('supervisor_target', '%(project_name)s')
     configuration.setdefault(
         'supervisor_conf',
-        '%(shared_path)s/configs/supervisor_%(env)s_%(role)s.conf'
+        '%(shared_path)s/configs/supervisor_%(stage)s_%(role)s.conf'
     )
     signal.register('deploy.started', _check_supervisor_config)
     signal.register('deploy.published', _restart_service_via_supervisor)
