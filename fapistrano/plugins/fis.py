@@ -22,5 +22,5 @@ def build_fis_assets():
         if env.fis_pack:
             cmd += '--pack '
         if env.fis_domain:
-            cmd += '--domain '
+            cmd += '--domains '
         run(cmd)
