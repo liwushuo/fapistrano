@@ -54,6 +54,7 @@ def set_default_configurations():
     setdefault('linked_dirs', [])
     setdefault('env_role_configs', {})
     setdefault('keey_releases', 5)
+    setdefault('stage_role_configs', {})
 
 def check_stage_and_role():
     stage = env.get('stage')
