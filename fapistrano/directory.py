@@ -3,6 +3,8 @@
 import os
 from fabric.api import run, env
 
+# TODO: remove most of it, because we have better default option now.
+
 def set_path():
     env.path = '/home/%(user)s/www/%(project_name)s' % env
 
