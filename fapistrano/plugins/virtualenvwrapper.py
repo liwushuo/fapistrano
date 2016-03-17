@@ -7,7 +7,7 @@ from .. import signal, configuration
 def init():
     configuration.setdefault('virtualenvwrapper_source', '/usr/local/bin/virtualenvwrapper.sh')
     configuration.setdefault('virtualenvwrapper_home', '/home/%(user)s/.virtualenvs')
-    configuration.setdefault('virtualenvwrapper_project', '/%(virtualenvwrapper_home)s/%(project_name)s')
+    configuration.setdefault('virtualenvwrapper_project', '/%(virtualenvwrapper_home)s/%(app_name)s')
     configuration.setdefault('virtualenvwrapper_pip_upgrade', True)
     configuration.setdefault('virtualenvwrapper_requirements', '%(release_path)s/requirements.txt')
     configuration.setdefault(
@@ -26,7 +26,7 @@ def check_python_env():
 
 def _check_virtualenvwrapper_env():
     if not exists(env.virtualenvwrapper_project):
-        run('source %(virtualenvwrapper_source)s && mkvirtualenv %(project_name)s' % env)
+        run('source %(virtualenvwrapper_source)s && mkvirtualenv %(app_name)s' % env)
 
 
 def _upgrade_pip():
