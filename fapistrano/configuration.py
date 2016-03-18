@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+from importlib import import_module
 from functools import wraps
 from datetime import datetime
 from fabric.api import env, abort, show, hide
@@ -75,6 +76,16 @@ def apply_role_configurations_to_env(stage, role):
             config = env.stage_role_configs[stage][role]
             apply_configurations_to_env(config)
 
+def apply_yaml_to_env(data):
+    import yaml
+    confs = yaml.load(data)
+    for key, value in confs.items():
+        setattr(env, key, value)
+    if not hasattr(env, 'plugins'):
+        return
+    for plugin in env.plugins:
+        mod = import_module(plugin)
+        mod.init()
 
 def apply_env(stage, role):
     env.stage = stage
