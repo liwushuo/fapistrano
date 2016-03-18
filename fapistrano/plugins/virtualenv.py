@@ -6,6 +6,7 @@ from fabric.contrib.files import exists
 from .. import signal, configuration
 
 def init():
+    configuration.setdefault('virtualenv_executive', '/usr/bin/env virtualenv')
     configuration.setdefault('virtualenv_requirements', '%(release_path)s/requirements.txt')
     configuration.setdefault('virtualenv_pip_upgrade', True)
     configuration.setdefault('virtualenv_venv_path', '%(release_path)s/venv')
@@ -24,7 +25,7 @@ def build_python_env():
 
 def _check_virtualenv_env():
     if not exists(env.virtualenv_venv_path):
-        run('virtualenv %(virtualenv_venv_path)s' % env)
+        run('%(virtualenv_executive) %(virtualenv_venv_path)s' % env)
 
 def _upgrade_pip():
     with prefix(env.virtualenv_activate):
