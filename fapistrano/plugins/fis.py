@@ -6,7 +6,7 @@ from .. import signal, configuration
 
 def init():
     configuration.setdefault('fis_output', False)
-    configuration.setdefault('fis_domain', False)
+    configuration.setdefault('fis_domains', False)
     configuration.setdefault('fis_optimize', True)
     configuration.setdefault('fis_pack', True)
     configuration.setdefault('fis_conf', 'fis-conf.js')
@@ -26,6 +26,6 @@ def build_fis_assets():
                 cmd += '--optimize '
             if env.fis_pack:
                 cmd += '--pack '
-            if env.fis_domain:
+            if env.fis_domains:
                 cmd += '--domains '
             run(cmd)
