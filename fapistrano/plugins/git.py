@@ -23,13 +23,15 @@ def check_repo(**kwargs):
 
 
 def log_previous_revision(**kwargs):
-    head = _read_current_revision()
-    green_alert('Rollback from %s' % head)
+    if _does_current_revision_exist():
+        head = _read_current_revision()
+        green_alert('Rollback from %s' % head)
 
 
 def log_rollback_revision(**kwargs):
-    head = _read_current_revision()
-    green_alert('Rollback to %s' % head)
+    if _does_current_revision_exist():
+        head = _read_current_revision()
+        green_alert('Rollback to %s' % head)
 
 
 def update_git_repo(**kwargs):
@@ -90,6 +92,8 @@ def _echo_revision():
 def _read_current_revision():
     return run('cat %(current_path)s/%(revision_file)s' % env)
 
+def _does_current_revision_exist():
+    return exists('%(current_path)s/$(revision_file)s' % env)
 
 def _set_current_version():
     env.current_version = _get_revision()
