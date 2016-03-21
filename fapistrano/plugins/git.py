@@ -35,16 +35,16 @@ def log_rollback_revision(**kwargs):
 
 
 def update_git_repo(**kwargs):
-    if not exists(env.repo_path):
-        _clone()
     _update()
     _set_current_version()
     _release()
     _echo_revision()
 
 
-
 def _check():
+    if not exists(env.repo_path):
+        _clone()
+
     with cd(env.repo_path):
         run('git ls-remote --heads %(repo)s' % env)
 
