@@ -15,14 +15,14 @@ def init():
     )
     configuration.setdefault(
         'supervisor_conf',
-        '%(shared_path)s/configs/supervisor_%(stage)s_%(role)s.conf'
+        'configs/supervisor_%(stage)s_%(role)s.conf'
     )
     signal.register('deploy.started', _check_supervisor_config)
     signal.register('deploy.published', _restart_service_via_supervisor)
     signal.register('deploy.restarting', _restart_service_via_supervisor)
 
 def _check_supervisor_config(**kwargs):
-    run('ln -nfs %(supervisor_conf)s %(supervisor_target)s' % env)
+    run('ln -nfs %(current_path)s/%(supervisor_conf)s %(supervisor_target)s' % env)
 
 def _restart_service_via_supervisor(**kwargs):
     output = show if env.supervisor_output else hide
