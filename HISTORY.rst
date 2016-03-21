@@ -10,6 +10,8 @@ History
 * add fis plugin.
 * add `fap` cli.
 * use signal to refactor release/rollback flow.
+* add curl plugin.
+* add supervisor plugin.
 
 0.5.1 (2015-2-1)
 ------------------
