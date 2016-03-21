@@ -2,11 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
-
+from setuptools import setup, find_packages
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -38,7 +34,7 @@ setup(
     author="Ju Lin",
     author_email='soasme@gmail.com',
     url='https://github.com/soasme/fapistrano',
-    packages=['fapistrano'],
+    packages=find_packages(),
     package_dir={'fapistrano': 'fapistrano'},
     entry_points="""
     [console_scripts]
