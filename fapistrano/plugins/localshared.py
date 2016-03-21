@@ -6,7 +6,7 @@ from .. import signal, configuration, directory
 
 def init():
     configuration.setdefault('localshared_source', '')
-    signal.register('deploy.started', copy_localshared_linked_files)
+    signal.register('deploy.starting', copy_localshared_linked_files)
 
 def copy_localshared_linked_files():
     _check_shared_file_dirs()

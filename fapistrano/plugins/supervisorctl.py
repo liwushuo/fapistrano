@@ -15,15 +15,13 @@ def init():
     )
     configuration.setdefault(
         'supervisor_conf',
-        '%(current_path)s/configs/supervisor_%(stage)s_%(role)s.conf'
+        '%(shared_path)s/configs/supervisor_%(stage)s_%(role)s.conf'
     )
     signal.register('deploy.started', _check_supervisor_config)
     signal.register('deploy.published', _restart_service_via_supervisor)
     signal.register('deploy.restarting', _restart_service_via_supervisor)
 
 def _check_supervisor_config(**kwargs):
-    if not exists(env.supervisor_conf):
-        abort('Error: can\'t find supervisor configuration.')
     run('ln -nfs %(supervisor_conf)s %(supervisor_target)s' % env)
 
 def _restart_service_via_supervisor(**kwargs):
