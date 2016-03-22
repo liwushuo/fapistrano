@@ -7,6 +7,7 @@ from .. import signal, configuration
 def init():
     configuration.setdefault('fis_output', False)
     configuration.setdefault('fis_domains', False)
+    configuration.setdefault('fis_md5', True)
     configuration.setdefault('fis_optimize', True)
     configuration.setdefault('fis_pack', True)
     configuration.setdefault('fis_conf', 'fis-conf.js')
@@ -22,6 +23,8 @@ def build_fis_assets():
                 '--file %(fis_conf)s '
                 '--dest %(fis_dest)s '
             ) % env
+            if env.fis_md5:
+                cmd += '--md5 '
             if env.fis_optimize:
                 cmd += '--optimize '
             if env.fis_pack:
