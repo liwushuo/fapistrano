@@ -103,7 +103,10 @@ def _start_deploy():
 
 def _check():
     run('mkdir -p %(path)s/{releases,shared/log}' % env)
-    run('chmod -R g+w %(shared_path)s' % env)
+
+    if env.shared_writable:
+        run('chmod -R g+w %(shared_path)s' % env)
+
     run('mkdir -p %(release_path)s' % env)
     for linked_file_dir in get_linked_file_dirs():
         dir = '%(release_path)s/' % env

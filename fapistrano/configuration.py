@@ -45,6 +45,7 @@ def set_default_configurations():
     setdefault('show_output', False)
     setdefault('user', 'deploy')
     setdefault('use_ssh_config', True)
+    setdefault('shared_writable', True)
     setdefault('path', '/home/%(user)s/www/%(app_name)s', force=True)
     setdefault('current_path', '%(path)s/current')
     setdefault('releases_path', '%(path)s/releases')
