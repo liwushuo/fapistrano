@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 
-from fabric.api import env, run, exists
+from fabric.api import env, run
+from fabric.contrib.files import exists
 from .. import signal, configuration, directory
 
 def init():
