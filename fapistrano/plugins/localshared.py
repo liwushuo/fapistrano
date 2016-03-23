@@ -23,7 +23,7 @@ def _check_shared_file_dirs():
 def _check_shared_dir_parents():
     for linked_dir_parent in directory.get_linked_dir_parents():
         env.linked_dir_parent = linked_dir_parent
-        run('mkdir -p %(shared_path)s/%(linked_file_dir)s' % env)
+        run('mkdir -p %(shared_path)s/%(linked_dir_parent)s' % env)
         del env['linked_dir_parent']
 
 def _copy_linked_files():
@@ -35,5 +35,5 @@ def _copy_linked_files():
 def _copy_linked_dirs():
     for linked_dir in directory.get_linked_dirs():
         env.linked_dir = linked_dir
-        run('rm -r %(shared_path)s/%(linked_file)s' % env)
-        run('cp -R %(localshared_source)s/%(linked_file)s %(shared_path)s' % env)
+        run('rm -r %(shared_path)s/%(linked_dir)s' % env)
+        run('cp -R %(localshared_source)s/%(linked_dir)s %(shared_path)s' % env)
