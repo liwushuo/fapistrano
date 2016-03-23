@@ -35,5 +35,4 @@ def _copy_linked_files():
 def _copy_linked_dirs():
     for linked_dir in directory.get_linked_dirs():
         env.linked_dir = linked_dir
-        run('rm -r %(shared_path)s/%(linked_dir)s' % env)
-        run('cp -R %(localshared_source)s/%(linked_dir)s %(shared_path)s' % env)
+        run('cp -R %(localshared_source)s/%(linked_dir)s/* %(shared_path)s/%(linked_dir)s' % env)
