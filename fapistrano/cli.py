@@ -14,8 +14,16 @@ from fapistrano import deploy
 @click.group()
 @click.option('-d', '--deployfile', default='./deploy.yml')
 def fap(deployfile):
-    with open(deployfile, 'rb') as f:
-        apply_yaml_to_env(f.read())
+    try:
+        with open(deployfile, 'rb') as f:
+            apply_yaml_to_env(f.read())
+    except IOError:
+        if deploy_file == './deploy.yml':
+            print("cannot find deployfile. Did you put a deploy.yml file on current directory?")
+            exit(1)
+        else:
+            print('cannot find deployfile. Does this file really exist?')
+            exit(1)
 
 
 @fap.command(context_settings=dict(
