@@ -17,7 +17,6 @@ from .directory import (
 from . import signal
 
 
-
 @task
 @with_configs
 def restart():
@@ -96,18 +95,6 @@ def rollback():
     green_alert('Finished')
     signal.emit('deploy.finished')
 
-
-@task
-def debug_output():
-    env.show_output = True
-
-
-@task
-@with_configs
-@runs_once
-def debug_env():
-    from pprint import pprint
-    pprint(env)
 
 
 def _start_deploy():
