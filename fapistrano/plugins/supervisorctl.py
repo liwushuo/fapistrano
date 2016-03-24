@@ -35,7 +35,7 @@ def _restart_service_via_supervisor(**kwargs):
         else:
             run('supervisorctl restart %(supervisor_program)s' % env)
 
-        # refresh group need supervisor>=3.20
+    # FIXME: refresh group need supervisor>=3.20
     if env.supervisor_check_status:
         with show('output'):
             run('supervisorctl status %(supervisor_program)s' % env)
