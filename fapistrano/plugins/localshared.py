@@ -4,6 +4,7 @@
 from fabric.api import env, run
 from fabric.contrib.files import exists
 from .. import signal, configuration, directory
+from ..utils import red_alert
 
 def init():
     configuration.setdefault('localshared_source', '')
@@ -32,6 +33,8 @@ def _copy_linked_files():
         env.linked_file = linked_file
         if exists('%(localshared_source)s/%(linked_file)s' % env):
             run('cp %(localshared_source)s/%(linked_file)s %(shared_path)s/%(linked_file)s' % env)
+        else:
+            red_alert('Missing %(localshared_source)s/%(linked_file)s' % env)
         del env['linked_file']
 
 def _copy_linked_dirs():
@@ -39,4 +42,6 @@ def _copy_linked_dirs():
         env.linked_dir = linked_dir
         if exists('%(localshared_source)s/%(linked_dir)s' % env):
             run('cp -R %(localshared_source)s/%(linked_dir)s/* %(shared_path)s/%(linked_dir)s' % env)
+        else:
+            red_alert('Missing %(localshared_source)s/%(linked_dir)s' % env)
         del env['linked_dir']
