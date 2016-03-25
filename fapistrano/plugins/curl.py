@@ -8,6 +8,7 @@ def init():
     configuration.setdefault('curl_output', '')
     configuration.setdefault('curl_options', '')
     configuration.setdefault('curl_extract_tar', '')
+    configuration.setdefault('curl_extract_tgz', '')
     configuration.setdefault('curl_postinstall_script', '')
     configuration.setdefault('curl_postinstall_output', True)
     signal.register('deploy.updating', download_artifact)
@@ -19,6 +20,8 @@ def download_artifact(**kwargs):
             cmd += ' -o %(curl_output)s' % env
         if env.curl_extract_tar:
             cmd += ' | tar -x'
+        elif env.curl_extract_tgz:
+            cmd += ' | tar -xz'
         run(cmd)
         if env.curl_postinstall_script:
             output = show if env.curl_postinstall_output else hide
