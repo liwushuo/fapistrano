@@ -2,6 +2,15 @@
 History
 =======
 
+0.7.1
+------------------
+
+* fix fis option.
+* add option `--shared_writable`.
+* alert on missing localshared files.
+* add option `--curl-postinstall-output`.
+* add option `--curl-output`.
+
 0.7.0 (2016-3-21)
 ------------------
 
