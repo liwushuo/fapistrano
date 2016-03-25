@@ -1,0 +1,54 @@
+# An example of how to deploy a git repo:
+#
+# Deploy a beeper tar to server
+#
+#     fap release -s staging -r app
+#
+# Rollback a release
+#
+#     $ fap rollback -s staging -r app
+#
+# Restart:
+#
+#     $ fap restart -s staging -r app
+#
+# Restart with supervisor restart:
+#
+#     $ fap restart -s staging -r app --supervisor-refresh=true
+#
+project_name: git-example
+app_name: git-example
+user: deploy
+use_ssh_config: true
+keep_releases: 5
+
+stage_role_configs:
+  staging:
+    app:
+      hosts:
+        - app-stag01
+      app_name: git-example-staging
+      linked_files:
+        - configs/supervisor_staging.conf
+        - settings/staging.py
+  production:
+    app:
+      hosts:
+        - app-app01
+      linked_files:
+        - configs/supervisor_production_app.conf
+        - settings/production.py
+
+plugins:
+  - fapistrano.plugins.localshared
+  - fapistrano.plugins.git
+  - fapistrano.plugins.virtualenvwrapper
+  - fapistrano.plugins.supervisorctl
+
+repo: 'git@git.example.org:fap/git-example.git'
+branch: master
+git_shallow_clone: 1
+
+supervisor_check_status: true
+
+localshared_source: '/etc/appconf/git-example'
