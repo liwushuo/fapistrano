@@ -5,6 +5,7 @@ from .. import signal, configuration
 
 def init():
     configuration.setdefault('curl_url', '')
+    configuration.setdefault('curl_output', '')
     configuration.setdefault('curl_options', '')
     configuration.setdefault('curl_extract_tar', '')
     configuration.setdefault('curl_postinstall_script', '')
@@ -14,6 +15,8 @@ def init():
 def download_artifact(**kwargs):
     with cd(env.release_path):
         cmd = 'curl %(curl_url)s %(curl_options)s' % env
+        if env.curl_output:
+            cmd += ' -o %(curl_output)s' % env
         if env.curl_extract_tar:
             cmd += ' | tar -x'
         run(cmd)
