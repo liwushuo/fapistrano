@@ -1,0 +1,53 @@
+# An example of how to deploy a project built in beeper tar:
+#
+# Deploy a beeper tar to server
+#
+#     fap release -s staging -r app --curl-url=http://ci.example.org/curl-example.tar
+#
+# Rollback a release
+#
+#     $ fap rollback -s staging -r app
+#
+# Restart:
+#
+#     $ fap restart -s staging -r app
+#
+# Restart with supervisor restart:
+#
+#     $ fap restart -s staging -r app --supervisor-refresh=true
+#
+project_name: curl-example
+app_name: curl-example
+user: deploy
+use_ssh_config: true
+keep_releases: 5
+
+stage_role_configs:
+  staging:
+    app:
+      hosts:
+        - app-stag01
+      app_name: curl-example-staging
+      linked_files:
+        - configs/supervisor_staging.conf
+        - settings/staging.py
+  production:
+    app:
+      hosts:
+        - app-app01
+      linked_files:
+        - configs/supervisor_production_app.conf
+        - settings/production.py
+
+plugins:
+  - fapistrano.plugins.localshared
+  - fapistrano.plugins.curl
+  - fapistrano.plugins.supervisorctl
+
+curl_extract_tar: true
+curl_postinstall_script: "sh ./install.sh"
+
+supervisor_check_status: true
+
+localshared_source: '/etc/appconf/curl-example'
+
