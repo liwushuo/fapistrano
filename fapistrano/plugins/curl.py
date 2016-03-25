@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from fabric.api import cd, env, run
+from fabric.api import cd, env, run, show, hide
 from .. import signal, configuration
 
 def init():
@@ -8,6 +8,7 @@ def init():
     configuration.setdefault('curl_options', '')
     configuration.setdefault('curl_extract_tar', '')
     configuration.setdefault('curl_postinstall_script', '')
+    configuration.setdefault('curl_postinstall_output', True)
     signal.register('deploy.updating', download_artifact)
 
 def download_artifact(**kwargs):
@@ -17,4 +18,6 @@ def download_artifact(**kwargs):
             cmd += ' | tar -x'
         run(cmd)
         if env.curl_postinstall_script:
-            run(env.curl_postinstall_script)
+            output = show if env.curl_postinstall_output else hide
+            with output('output'):
+                run(env.curl_postinstall_script)
