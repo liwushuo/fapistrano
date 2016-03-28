@@ -33,6 +33,27 @@ It do pretter little things:
 * Finish
     * Remove stale releases, according the number defined by `keep_releases`.
 
+Example::
+
+    [server01] Executing task 'deploy.release'
+    ===> Starting
+    [server01] run: mkdir -p /home/deploy/www/example/{releases,shared/log}
+    [server01] run: chmod -R g+w /home/deploy/www/example/shared
+    [server01] run: mkdir -p /home/deploy/www/example/releases/160314-085322
+    ===> Started
+    ===> Updating
+    ===> Updated
+    ===> Publishing
+    [server01] run: ln -nfs /home/deploy/www/example/releases/160314-085322 current
+    ===> Published
+    ===> Finishing
+    ===> Cleanning up old release(s)
+    [server01] run: ls -x /home/deploy/www/example/releases
+    [server01] run: rm -rf 160313-230707
+    ===> Finished
+    Done.
+    Disconnecting from server:2333... done.
+
 `fap rollback`
 --------------
 
@@ -50,6 +71,26 @@ This command is designed to rollback to previously deployed release.
 * Finish
     * Remove `rollback_from` release.
 
+
+Example::
+
+    [server01] Executing task 'deploy.release'
+    ===> Starting
+    [server01] run: mkdir -p /home/deploy/www/example/{releases,shared/log}
+    [server01] run: chmod -R g+w /home/deploy/www/example/shared
+    ===> Started
+    ===> Updating
+    ===> Updated
+    ===> Publishing
+    [server01] run: ln -nfs /home/deploy/www/example/releases/160314-083000 current
+    ===> Published
+    ===> Finishing
+    ===> Cleanning up old release(s)
+    [server01] run: rm -rf 160314-085322
+    ===> Finished
+    Done.
+    Disconnecting from server:2333... done.
+
 `fap restart`
 -------------
 
@@ -57,3 +98,11 @@ This command is designed to restart you application.
 
 * Restart
     * Default behavious is blank.
+
+Example::
+
+    [server01] Executing task 'deploy.release'
+    ===> Restarting
+    ===> Restarted
+    Done.
+    Disconnecting from server:2333... done.
