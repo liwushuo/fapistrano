@@ -18,6 +18,9 @@ Contents:
 
    installation
    directory
+   configuration
+   12factor
+   customize
    quick_start
 
 Indices and tables
