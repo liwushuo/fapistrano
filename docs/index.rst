@@ -17,13 +17,13 @@ Contents:
    :maxdepth: 2
 
    installation
+   quick_start
    directory
    configuration
    cli
    plugin
    signals
    12factor
-   quick_start
 
 Indices and tables
 ==================
