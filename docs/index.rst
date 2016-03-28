@@ -9,12 +9,15 @@ Welcome to fapistrano's documentation!
 Fapistrano is a remote server automation and deployment tool.
 It can be easily used to rolling update your sites.
 
-Fapistrano grows from several fabric tasks and inspired by capistrano.
+Fapistrano grows from several `fabric` tasks and inspired by capistrano.
 
 Contents:
 
 .. toctree::
    :maxdepth: 2
+
+   installation
+   quick_start
 
 Indices and tables
 ==================
