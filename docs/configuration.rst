@@ -8,7 +8,9 @@ Here is the algorithm which Fapistrano find deployfile:
 
 * Read system environment variable `FAP_APP` and then find deployfile by reading another system environment varialble `%(FAP_APP)s_DEPLOYFILE`, `EXAMPLE_DEPLOYFILE` in the assuming case::
 
-    $ FAP_APP=EXAMPLE EXAMPLE_DEPLOYFILE=/path/to/example/deploy.yml fap release -s production
+    $ export FAP_APP=EXAMPLE
+    $ export EXAMPLE_DEPLOYFILE=/path/to/example/deploy.yml
+    $ fap release -s production
 
 * If `FAP_APP` does not exist, Fapistrano will try to load deployfile by `--deployfile` / `-d` option::
 
@@ -25,11 +27,11 @@ Configuration Loading Strategy
 
 Here is the algorithm which Fapistrano load configuration items:
 
-* Read command line options, with key turning `-` into `_`.  NOTICE: key must exists in fabric env or deploy.yml::
+* Read command line options, with key turning `-` into `_`.  NOTICE: key must exists in fabric env, Fapistrano default env or deploy.yml::
 
     $ fap release -s production --current-release=/var/www/example
 
-* Read Configs defined in `stage_role_configs`.::
+* Read Configs defined in `stage_role_configs`. In below case, Fapistrano will use path defined in `stage_role_configs/stage/app/current_release`::
 
     $ tail -n5 deploy.yml
     stage_role_configs:
@@ -84,10 +86,10 @@ The following variables are used for Fapistrano:
 * `releases_path`
 * `shared_path`
 * `new_release`
-* `release_path`
-* `linked_files`
-* `linked_dirs`
-* `stage_role_configs`
-* `keep_releases`
+* `release_path`,
+* `linked_files`, list, default [].
+* `linked_dirs`, list, default [].
+* `stage_role_configs`, dict.
+* `keep_releases`, integer, default 5.
 
 Additional configurations are defined by Fapistrano plugins.
