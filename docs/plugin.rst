@@ -6,7 +6,7 @@ This section talks about installing, loading and writing third party plugins.
 Installing Plugins
 ------------------
 
-Installing a third party plugin can be easily done with pip:
+Installing a third party plugin can be easily done with pip::
 
     $ pip install fapistrano-PLUGIN
 
@@ -26,7 +26,7 @@ You can set plugin configurations globally, or custmozie for each Stage-Role, or
 on each cli running.
 
 Tracing Plugins(TODO)
----------------
+----------------------
 
 If you want to find out a complete function call sequence during deploying applicaiton,
 you can find out the answer by typing::
@@ -34,7 +34,7 @@ you can find out the answer by typing::
     $ fap release -s production --dry-run
 
 Deactivating Plugins(TODO)
---------------------
+--------------------------
 
 TODO
 
@@ -54,7 +54,8 @@ can be used throughout many projects.
 A plugin contains an `init` function.
 
 Normally plugin register default configurations and signal handlers at `init` function.
-A plugin is recommended to use it's name as prefix in configuration definition.::
+A plugin is recommended to use it's name as prefix in configuration definition. Here is
+a hello-world example::
 
 
     # fapistrano_echo.py
