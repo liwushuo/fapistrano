@@ -1,0 +1,10 @@
+project_name: smallest-example
+app_name: smallest-example
+user: deploy
+use_ssh_config: true
+
+stage_role_configs:
+  staging:
+    app:
+      hosts:
+        - app-stag01
