@@ -21,8 +21,8 @@ Contents:
    configuration
    cli
    plugin
+   signals
    12factor
-   customize
    quick_start
 
 Indices and tables
