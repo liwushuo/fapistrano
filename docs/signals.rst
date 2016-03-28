@@ -10,7 +10,7 @@ Basically, Fapistrano provides 3 type of deploy flow:
 Release Flow
 ------------
 
-When you trigger a release task, it emits at least 8 signals::
+When you trigger a release task, it emits at least 8 signals:
 
 * `deploy.starting`
 * `deploy.started`
@@ -24,7 +24,7 @@ When you trigger a release task, it emits at least 8 signals::
 Rollback Flow
 -------------
 
-When you trigger a rollback task, it emits at least 8 signals::
+When you trigger a rollback task, it emits at least 8 signals:
 
 * `deploy.starting`
 * `deploy.started`
@@ -38,7 +38,7 @@ When you trigger a rollback task, it emits at least 8 signals::
 Restart Flow
 ------------
 
-When you tirgger a restart flow, it emits at least 2 signals::
+When you tirgger a restart flow, it emits at least 2 signals:
 
 * `deploy.restarting`
 * `deploy.restarted`
