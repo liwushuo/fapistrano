@@ -5,6 +5,7 @@ History
 0.7.2
 ------------------
 
+* cli support group deploy by role or stage.
 * add option `--curl-extract-tgz`.
 
 0.7.1
