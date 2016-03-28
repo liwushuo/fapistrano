@@ -1,0 +1,15 @@
+project_name: git-example
+app_name: git-example
+user: deploy
+use_ssh_config: true
+
+stage_role_configs:
+  staging:
+    app:
+      hosts:
+        - app-stag01
+
+plugins:
+  - fapistrano.plugins.git
+
+repo: git@github.com:octocat/Hello-World.git
