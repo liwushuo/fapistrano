@@ -17,6 +17,7 @@ Contents:
    :maxdepth: 2
 
    installation
+   directory
    quick_start
 
 Indices and tables
