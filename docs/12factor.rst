@@ -6,11 +6,8 @@ configuring you application.
 
 Following the guideline of `The Twelve-Factor App` may reduce potential traps.
 
-Guideline
----------
-
 Codebase
-````````
+---------
 
 One codebase tracked in revision control, many deploys.
 
@@ -47,7 +44,7 @@ on different servers, sharing different config.::
 
 
 Dependencies
-````````````
+------------------
 
 Explicity declare and isolate dependencies.
 
@@ -76,7 +73,8 @@ wheel packages as deployment artifact may be a better practice.
 
 
 Config
-``````
+------------------
+
 
 Store config in the environment.
 
@@ -95,7 +93,7 @@ It is recommended to save your secrets at your shared folder and then link them 
 Load these linked files as configurations. They won't hurt you!
 
 Build, Release, Run
-````````````````````
+-------------------
 
 Strictly separate build and run stages.
 
@@ -130,7 +128,7 @@ Once artifact downloaded, Fapistrano will
 * Run `./install.sh` which possibly create virtualenv and install python dependencies. (virtualenv and dependencies have been put into tgz)
 
 Processes
-``````````
+-------------------
 
 Execute the app as one or more stateless processes.
 
@@ -152,7 +150,7 @@ If your have any persist data, commit them into database or write them into shar
 NOTICE: do not write supervisor log in shared, since they are written by `root` user.
 
 Concurrency
-````````````
+-------------------
 
 Scale out via the process model
 
@@ -194,7 +192,7 @@ Use your load balance infrastructure to route traffic to these applciation insta
     }
 
 Disposability
-``````````````
+-------------------
 
 Maximize robustness with fast startup and graceful shutdown.
 
@@ -214,7 +212,7 @@ respond to crashed processes, and handle restarts and shutdowns::
     supervisor_conf: configs/supervisor_%(role)s.conf
 
 Dev/Prod parity
-```````````````
+---------------
 
 Keep development, staging, and production as similar as possible.
 
@@ -232,7 +230,7 @@ to symlink different config files.::
             - app/settings/staging.py
 
 Admin Processes
-````````````````
+----------------
 
 Run admin/management tasks as one-off processes.
 
