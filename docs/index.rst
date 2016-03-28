@@ -19,6 +19,8 @@ Contents:
    installation
    directory
    configuration
+   cli
+   plugin
    12factor
    customize
    quick_start
