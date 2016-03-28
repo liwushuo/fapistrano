@@ -17,3 +17,4 @@ repo: git@github.com:liwushuo/fapistrano.git
 git_archive_tree: examples/supervisor-example
 
 supervisorctl_check_status: true
+supervisorctl_conf: configs/supervisor_%(stage)s_%(role)s.conf
