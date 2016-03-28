@@ -1,0 +1,19 @@
+project_name: supervisor-example
+app_name: supervisor-example
+user: deploy
+use_ssh_config: true
+
+stage_role_configs:
+  staging:
+    app:
+      hosts:
+        - app-stag01
+
+plugins:
+  - fapistrano.plugins.git
+  - fapistrano.plugins.supervisorctl
+
+repo: git@github.com:liwushuo/fapistrano.git
+git_archive_tree: examples/supervisor-example
+
+supervisorctl_check_status: true
