@@ -12,6 +12,7 @@ def init():
     configuration.setdefault('revision_file', 'REVISION')
     configuration.setdefault('repo_path', '%(path)s/repo')
     configuration.setdefault('repo_head_path', '%(repo_path)s/HEAD')
+    configuration.setdefault('git_archive_tree', '')
     signal.register('deploy.started', check_repo)
     signal.register('deploy.reverting', log_previous_revision)
     signal.register('deploy.finishing_rollback', log_rollback_revision)
@@ -70,7 +71,11 @@ def _update():
 
 def _release():
     with cd(env.repo_path):
-        run('git archive %(branch)s | tar -x -f - -C %(release_path)s/' % env)
+        if env.git_archive_tree:
+            env.git_strip_components = len(env.git_archive_tree.split('/'))
+            run('git archive %(branch)s %(git_archive_tree)s | tar -x --strip-components %(git_strip_components)d -f - -C %(release_path)s/' % env)
+        else:
+            run('git archive %(branch)s | tar -x -f - -C %(release_path)s/' % env)
 
 
 def _get_revision():
