@@ -24,8 +24,8 @@ def build_python_env():
     _install_requirements()
 
 def _check_virtualenv_env():
-    if not exists(env.virtualenv_venv_path):
-        run('%(virtualenv_executive) %(virtualenv_venv_path)s' % env)
+    if not exists(env.virtualenv_venv_path % env):
+        run('%(virtualenv_executive)s %(virtualenv_venv_path)s' % env)
 
 def _upgrade_pip():
     with prefix(env.virtualenv_activate):
