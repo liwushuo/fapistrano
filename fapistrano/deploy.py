@@ -2,7 +2,7 @@
 
 from fabric.api import (
     runs_once, run, env, cd,
-    task, abort,
+    task, abort, show,
 )
 from fabric.contrib.files import exists
 
@@ -22,6 +22,7 @@ from . import signal
 def restart():
     signal.emit('deploy.restarting')
     signal.emit('deploy.restarted')
+    _run_command()
 
 
 @task
@@ -53,6 +54,7 @@ def release():
 
     green_alert('Finished')
     signal.emit('deploy.finished')
+    _run_command()
 
 
 @task
@@ -94,6 +96,8 @@ def rollback():
 
     green_alert('Finished')
     signal.emit('deploy.finished')
+
+    _run_command()
 
 
 
@@ -145,3 +149,9 @@ def _cleanup():
         outdated_releases = get_outdated_releases()
         if outdated_releases:
             run('rm -rf %s' % ' '.join(outdated_releases))
+
+def _run_command():
+    if env.run_command:
+        with cd(env.current_path):
+            with show('output'):
+                run(env.run_command)

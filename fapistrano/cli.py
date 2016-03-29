@@ -31,10 +31,11 @@ def fap(ctx, deployfile):
 ))
 @click.option('-r', '--role', help='deploy role, for example: production, staging')
 @click.option('-s', '--stage', help='deploy stage, for example: app, worker, cron')
+@click.option('-c', '--command', help='run command')
 @click.argument('plugin_args', nargs=-1, type=click.UNPROCESSED)
 @click.pass_context
-def release(ctx, role, stage, plugin_args):
-    _execute(ctx, deploy.release, stage, role, plugin_args)
+def release(ctx, role, stage, command, plugin_args):
+    _execute(ctx, deploy.release, stage, role, command, plugin_args)
 
 
 @fap.command(context_settings=dict(
@@ -42,10 +43,11 @@ def release(ctx, role, stage, plugin_args):
 ))
 @click.option('-r', '--role', help='deploy role, for example: production, staging')
 @click.option('-s', '--stage', help='deploy stage, for example: app, worker, cron')
+@click.option('-c', '--command', help='run command')
 @click.argument('plugin_args', nargs=-1, type=click.UNPROCESSED)
 @click.pass_context
-def rollback(ctx, role, stage, plugin_args):
-    _execute(ctx, deploy.rollback, stage, role, plugin_args)
+def rollback(ctx, role, stage, command, plugin_args):
+    _execute(ctx, deploy.rollback, stage, role, command, plugin_args)
 
 
 @fap.command(context_settings=dict(
@@ -53,10 +55,11 @@ def rollback(ctx, role, stage, plugin_args):
 ))
 @click.option('-r', '--role', help='deploy role, for example: production, staging')
 @click.option('-s', '--stage', help='deploy stage, for example: app, worker, cron')
+@click.option('-c', '--command', help='run command')
 @click.argument('plugin_args', nargs=-1, type=click.UNPROCESSED)
 @click.pass_context
-def restart(ctx, role, stage, plugin_args):
-    _execute(ctx, deploy.restart, stage, role, plugin_args)
+def restart(ctx, role, stage, command, plugin_args):
+    _execute(ctx, deploy.restart, stage, role, command, plugin_args)
 
 
 def _apply_plugin_options(plugin_args):
@@ -69,9 +72,13 @@ def _apply_plugin_options(plugin_args):
     for arg_key in order:
         setattr(env, arg_key, opts[arg_key])
 
-def _setup_execution(ctx, role, stage, plugin_args):
+def get_method_name(method):
+    return method.__name__.split('.')[-1]
+
+def _setup_execution(ctx, method, role, stage, command, plugin_args):
+    env.run_command = command or ''
     set_default_configurations(force=True)
-    apply_yaml_to_env(ctx.obj.get('yaml'))
+    apply_yaml_to_env(ctx.obj.get('yaml'), get_method_name(method))
     apply_env(stage, role)
     _apply_plugin_options(plugin_args)
 
@@ -119,11 +126,11 @@ def _get_execute_stage_and_roles(ctx, stage, role):
         comb.append((_stage, role))
     return comb
 
-def _execute(ctx, method, stage=None, role=None, plugin_args=None):
+def _execute(ctx, method, stage=None, role=None, command=None, plugin_args=None):
     combinations = _get_execute_stage_and_roles(ctx, stage, role)
     for stage, role in combinations:
         _log('Executing %s at %s' % (role, stage))
-        _setup_execution(ctx, role, stage, plugin_args)
+        _setup_execution(ctx, method, role, stage, command, plugin_args)
         execute(method)
 
 
