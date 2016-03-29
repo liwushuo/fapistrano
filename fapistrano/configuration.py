@@ -80,10 +80,16 @@ def apply_role_configurations_to_env(stage, role):
 def apply_yaml_to_env(data):
     import yaml
     confs = yaml.load(data)
+
+    from .signal import clear
+    clear()
+
     for key, value in confs.items():
         setattr(env, key, value)
+
     if not hasattr(env, 'plugins'):
         return
+
     for plugin in env.plugins:
         mod = import_module(plugin)
         mod.init()
