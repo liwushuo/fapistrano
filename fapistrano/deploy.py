@@ -99,7 +99,12 @@ def rollback():
 
     _run_command()
 
-
+@task
+@with_configs
+def once():
+    green_alert('Running')
+    _run_command()
+    green_alert('Ran')
 
 def _start_deploy():
     _check()

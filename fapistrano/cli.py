@@ -61,6 +61,17 @@ def rollback(ctx, role, stage, command, plugin_args):
 def restart(ctx, role, stage, command, plugin_args):
     _execute(ctx, deploy.restart, stage, role, command, plugin_args)
 
+@fap.command(context_settings=dict(
+    ignore_unknown_options=True,
+))
+@click.option('-r', '--role', help='deploy role, for example: production, staging')
+@click.option('-s', '--stage', help='deploy stage, for example: app, worker, cron')
+@click.option('-c', '--command', help='run command')
+@click.argument('plugin_args', nargs=-1, type=click.UNPROCESSED)
+@click.pass_context
+def once(ctx, role, stage, command, plugin_args):
+    _execute(ctx, deploy.once, stage, role, command, plugin_args)
+
 
 def _apply_plugin_options(plugin_args):
     parser = OptionParser()
