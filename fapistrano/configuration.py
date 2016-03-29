@@ -41,22 +41,22 @@ def setdefault(key, value, force=False):
 
 RELEASE_PATH_FORMAT = '%y%m%d-%H%M%S'
 
-def set_default_configurations():
-    setdefault('show_output', False)
-    setdefault('user', 'deploy')
-    setdefault('use_ssh_config', True)
-    setdefault('shared_writable', True)
-    setdefault('path', '/home/%(user)s/www/%(app_name)s', force=True)
-    setdefault('current_path', '%(path)s/current')
-    setdefault('releases_path', '%(path)s/releases')
-    setdefault('shared_path', '%(path)s/shared')
-    setdefault('new_release', datetime.now().strftime(RELEASE_PATH_FORMAT))
-    setdefault('release_path', '%(releases_path)s/%(new_release)s')
-    setdefault('linked_files', [])
-    setdefault('linked_dirs', [])
-    setdefault('env_role_configs', {})
-    setdefault('keep_releases', 5)
-    setdefault('stage_role_configs', {})
+def set_default_configurations(force=True):
+    setdefault('show_output', False, force)
+    setdefault('user', 'deploy', force)
+    setdefault('use_ssh_config', True, force)
+    setdefault('shared_writable', True, force)
+    setdefault('path', '/home/%(user)s/www/%(app_name)s', force)
+    setdefault('current_path', '%(path)s/current', force)
+    setdefault('releases_path', '%(path)s/releases', force)
+    setdefault('shared_path', '%(path)s/shared', force)
+    setdefault('new_release', datetime.now().strftime(RELEASE_PATH_FORMAT), force)
+    setdefault('release_path', '%(releases_path)s/%(new_release)s', force)
+    setdefault('linked_files', [], force)
+    setdefault('linked_dirs', [], force)
+    setdefault('env_role_configs', {}, force)
+    setdefault('keep_releases', 5, force)
+    setdefault('stage_role_configs', {}, force)
 
 def check_stage_and_role():
     stage = env.get('stage')
@@ -95,7 +95,7 @@ def apply_env(stage, role):
     env.stage = stage
     env.role = role
     check_stage_and_role()
-    set_default_configurations()
+    set_default_configurations(force=False)
     apply_role_configurations_to_env(stage, role)
     apply_configurations_to_env(format_definition())
 

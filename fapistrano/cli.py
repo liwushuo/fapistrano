@@ -7,7 +7,7 @@ import click
 from click.parser import OptionParser
 from fabric.api import env, execute
 
-from fapistrano.configuration import apply_env, apply_yaml_to_env
+from fapistrano.configuration import apply_env, apply_yaml_to_env, set_default_configurations
 from fapistrano import deploy
 
 
@@ -70,6 +70,7 @@ def _apply_plugin_options(plugin_args):
         setattr(env, arg_key, opts[arg_key])
 
 def _setup_execution(ctx, role, stage, plugin_args):
+    set_default_configurations(force=True)
     apply_yaml_to_env(ctx.obj.get('yaml'))
     apply_env(stage, role)
     _apply_plugin_options(plugin_args)
