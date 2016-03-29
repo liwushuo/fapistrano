@@ -5,6 +5,7 @@ from fabric.contrib.files import exists
 from .. import signal, configuration
 
 def init():
+    configuration.setdefault('supervisor_restart', True)
     configuration.setdefault('supervisor_refresh', False)
     configuration.setdefault('supervisor_output', False)
     configuration.setdefault('supervisor_check_status', False)
@@ -32,7 +33,7 @@ def _restart_service_via_supervisor(**kwargs):
             run('supervisorctl reread')
             if not run('supervisorctl update'):
                 run('supervisorctl start %(supervisor_program)s' % env)
-        else:
+        elif env.supervisor_restart:
             run('supervisorctl restart %(supervisor_program)s' % env)
 
     # FIXME: refresh group need supervisor>=3.20
