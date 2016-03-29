@@ -7,6 +7,7 @@ History
 
 * cli support group deploy by role or stage.
 * add option `--curl-extract-tgz`.
+* add option `--git-archive-tree`.
 
 0.7.1
 ------------------
