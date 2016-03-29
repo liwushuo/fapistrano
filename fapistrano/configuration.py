@@ -33,7 +33,7 @@ def format_definition():
     return cals
 
 
-def setdefault(key, value, force=False):
+def setdefault(key, value, force=True):
     if force:
         setattr(env, key, value)
     elif not hasattr(env, key):
@@ -81,15 +81,12 @@ def apply_yaml_to_env(confs):
     from .signal import clear
     clear()
 
-    for key, value in confs.items():
-        setattr(env, key, value)
-
-    if not hasattr(env, 'plugins'):
-        return
-
-    for plugin in env.plugins:
+    for plugin in confs.get('plugins', []):
         mod = import_module(plugin)
         mod.init()
+
+    for key, value in confs.items():
+        setattr(env, key, value)
 
 def apply_env(stage, role):
     env.stage = stage
