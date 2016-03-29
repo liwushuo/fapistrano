@@ -19,6 +19,9 @@ class Namespace(dict):
 
 namespace = Namespace()
 
+def clear():
+    namespace.clear()
+
 def emit(event, **data):
     if event not in namespace:
         return
