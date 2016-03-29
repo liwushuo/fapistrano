@@ -12,7 +12,8 @@ from fapistrano import deploy
 
 @click.group()
 @click.option('-d', '--deployfile', default='./deploy.yml')
-def fap(deployfile):
+@click.pass_context
+def fap(ctx, deployfile):
     try:
         with open(deployfile, 'rb') as f:
             apply_yaml_to_env(f.read())
@@ -29,7 +30,8 @@ def fap(deployfile):
 @click.option('-r', '--role', help='deploy role, for example: production, staging')
 @click.option('-s', '--stage', help='deploy stage, for example: app, worker, cron')
 @click.argument('plugin_args', nargs=-1, type=click.UNPROCESSED)
-def release(role, stage, plugin_args):
+@click.pass_context
+def release(ctx, role, stage, plugin_args):
     _execute(deploy.release, stage, role, plugin_args)
 
 
@@ -39,7 +41,8 @@ def release(role, stage, plugin_args):
 @click.option('-r', '--role', help='deploy role, for example: production, staging')
 @click.option('-s', '--stage', help='deploy stage, for example: app, worker, cron')
 @click.argument('plugin_args', nargs=-1, type=click.UNPROCESSED)
-def rollback(role, stage, plugin_args):
+@click.pass_context
+def rollback(ctx, role, stage, plugin_args):
     _execute(deploy.rollback, stage, role, plugin_args)
 
 
@@ -49,7 +52,8 @@ def rollback(role, stage, plugin_args):
 @click.option('-r', '--role', help='deploy role, for example: production, staging')
 @click.option('-s', '--stage', help='deploy stage, for example: app, worker, cron')
 @click.argument('plugin_args', nargs=-1, type=click.UNPROCESSED)
-def restart(role, stage, plugin_args):
+@click.pass_context
+def restart(ctx, role, stage, plugin_args):
     _execute(deploy.restart, stage, role, plugin_args)
 
 
