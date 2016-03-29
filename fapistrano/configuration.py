@@ -77,10 +77,7 @@ def apply_role_configurations_to_env(stage, role):
             config = env.stage_role_configs[stage][role]
             apply_configurations_to_env(config)
 
-def apply_yaml_to_env(data):
-    import yaml
-    confs = yaml.load(data)
-
+def apply_yaml_to_env(confs):
     from .signal import clear
     clear()
 

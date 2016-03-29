@@ -2,6 +2,7 @@
 
 from collections import defaultdict
 
+import yaml
 import click
 from click.parser import OptionParser
 from fabric.api import env, execute
@@ -16,7 +17,8 @@ from fapistrano import deploy
 def fap(ctx, deployfile):
     try:
         with open(deployfile, 'rb') as f:
-            apply_yaml_to_env(f.read())
+            ctx.obj = {'yaml': yaml.load(f.read())}
+
     except IOError:
         if deployfile == './deploy.yml':
             _abort("cannot find deployfile. Did you put a deploy.yml file on current directory?")
@@ -32,7 +34,7 @@ def fap(ctx, deployfile):
 @click.argument('plugin_args', nargs=-1, type=click.UNPROCESSED)
 @click.pass_context
 def release(ctx, role, stage, plugin_args):
-    _execute(deploy.release, stage, role, plugin_args)
+    _execute(ctx, deploy.release, stage, role, plugin_args)
 
 
 @fap.command(context_settings=dict(
@@ -43,7 +45,7 @@ def release(ctx, role, stage, plugin_args):
 @click.argument('plugin_args', nargs=-1, type=click.UNPROCESSED)
 @click.pass_context
 def rollback(ctx, role, stage, plugin_args):
-    _execute(deploy.rollback, stage, role, plugin_args)
+    _execute(ctx, deploy.rollback, stage, role, plugin_args)
 
 
 @fap.command(context_settings=dict(
@@ -54,7 +56,7 @@ def rollback(ctx, role, stage, plugin_args):
 @click.argument('plugin_args', nargs=-1, type=click.UNPROCESSED)
 @click.pass_context
 def restart(ctx, role, stage, plugin_args):
-    _execute(deploy.restart, stage, role, plugin_args)
+    _execute(ctx, deploy.restart, stage, role, plugin_args)
 
 
 def _apply_plugin_options(plugin_args):
@@ -67,51 +69,64 @@ def _apply_plugin_options(plugin_args):
     for arg_key in order:
         setattr(env, arg_key, opts[arg_key])
 
-def _setup_execution(role, stage, plugin_args):
-    env.role = role
-    env.stage = stage
+def _setup_execution(ctx, role, stage, plugin_args):
+    apply_yaml_to_env(ctx.obj.get('yaml'))
     apply_env(stage, role)
     _apply_plugin_options(plugin_args)
 
 def _abort(message):
-    click.secho(message, blink=True, fg='red')
+    click.secho('Error: %s' % message, blink=True, fg='red')
     exit(1)
 
-def _get_execute_stage_and_roles(stage, role):
-    if not stage and not role:
+def _log(message):
+    click.secho(message, blink=True, fg='green')
+
+def _get_execute_stage_and_roles(ctx, stage, role):
+    stage_role_configs = ctx.obj.get('yaml').get('stage_role_configs')
+
+    if not stage_role_configs:
+        _abort('Stage role config not found.')
+
+    if not role and not stage:
         _abort('Stage or role not found.')
-    elif not role and stage not in env.stage_role_configs:
+
+    if not role and stage not in stage_role_configs:
         _abort('Stage not found.')
-    elif not role and not env.stage_role_configs[stage]:
+
+    if not role and not stage_role_configs.get(stage):
         _abort('No role defined in this stage.')
-    elif not role:
-        _stage = env.stage_role_configs[stage]
-        for _role in _stage.keys():
-            yield (stage, _role)
-        return
+
+    if not role:
+        comb = []
+        for _role in stage_role_configs[stage].keys():
+            comb.append((stage, _role))
+        return comb
 
     roles = defaultdict(set)
-    for _stage in env.stage_role_configs:
-        for _role in env.stage_role_configs[_stage]:
+    for _stage in stage_role_configs:
+        for _role in stage_role_configs[_stage]:
             roles[_role].add(_stage)
 
     if role not in roles:
         _abort('Role not found.')
-    elif not roles[role]:
-        _abort('No stage defined for this role.')
-    else:
-        for stage in roles[role]:
-            yield (stage, role)
 
-def _execute(method, stage=None, role=None, plugin_args=None):
-    combinations = _get_execute_stage_and_roles(stage, role)
+    if not roles[role]:
+        _abort('No stage defined for this role.')
+
+    comb = []
+    for _stage in roles[role]:
+        comb.append((_stage, role))
+    return comb
+
+def _execute(ctx, method, stage=None, role=None, plugin_args=None):
+    combinations = _get_execute_stage_and_roles(ctx, stage, role)
     for stage, role in combinations:
-        print stage, role
-        _setup_execution(role, stage, plugin_args)
+        _log('Executing %s at %s' % (role, stage))
+        _setup_execution(ctx, role, stage, plugin_args)
         execute(method)
 
 
 if __name__ == '__main__':
     import os
     auto_envvar_prefix = os.environ.get('FAP_APP') or ''
-    fap(auto_envvar_prefix=auto_envvar_prefix)
+    fap(obj={}, auto_envvar_prefix=auto_envvar_prefix)
