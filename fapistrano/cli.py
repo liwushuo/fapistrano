@@ -31,11 +31,10 @@ def fap(ctx, deployfile):
 ))
 @click.option('-r', '--role', help='deploy role, for example: production, staging')
 @click.option('-s', '--stage', help='deploy stage, for example: app, worker, cron')
-@click.option('-c', '--command', help='run command')
 @click.argument('plugin_args', nargs=-1, type=click.UNPROCESSED)
 @click.pass_context
-def release(ctx, role, stage, command, plugin_args):
-    _execute(ctx, deploy.release, stage, role, command, plugin_args)
+def release(ctx, role, stage, plugin_args):
+    _execute(ctx, deploy.release, stage, role, None, plugin_args)
 
 
 @fap.command(context_settings=dict(
@@ -43,11 +42,10 @@ def release(ctx, role, stage, command, plugin_args):
 ))
 @click.option('-r', '--role', help='deploy role, for example: production, staging')
 @click.option('-s', '--stage', help='deploy stage, for example: app, worker, cron')
-@click.option('-c', '--command', help='run command')
 @click.argument('plugin_args', nargs=-1, type=click.UNPROCESSED)
 @click.pass_context
-def rollback(ctx, role, stage, command, plugin_args):
-    _execute(ctx, deploy.rollback, stage, role, command, plugin_args)
+def rollback(ctx, role, stage, plugin_args):
+    _execute(ctx, deploy.rollback, stage, role, None, plugin_args)
 
 
 @fap.command(context_settings=dict(
@@ -55,11 +53,10 @@ def rollback(ctx, role, stage, command, plugin_args):
 ))
 @click.option('-r', '--role', help='deploy role, for example: production, staging')
 @click.option('-s', '--stage', help='deploy stage, for example: app, worker, cron')
-@click.option('-c', '--command', help='run command')
 @click.argument('plugin_args', nargs=-1, type=click.UNPROCESSED)
 @click.pass_context
-def restart(ctx, role, stage, command, plugin_args):
-    _execute(ctx, deploy.restart, stage, role, command, plugin_args)
+def restart(ctx, role, stage, plugin_args):
+    _execute(ctx, deploy.restart, stage, role, None, plugin_args)
 
 @fap.command(context_settings=dict(
     ignore_unknown_options=True,
@@ -71,6 +68,17 @@ def restart(ctx, role, stage, command, plugin_args):
 @click.pass_context
 def once(ctx, role, stage, command, plugin_args):
     _execute(ctx, deploy.once, stage, role, command, plugin_args)
+
+
+@fap.command(context_settings=dict(
+    ignore_unknown_options=True,
+))
+@click.option('-r', '--role', help='deploy role, for example: production, staging')
+@click.option('-s', '--stage', help='deploy stage, for example: app, worker, cron')
+@click.argument('plugin_args', nargs=-1, type=click.UNPROCESSED)
+@click.pass_context
+def shell(ctx, role, stage, plugin_args):
+    _execute(ctx, deploy.shell, stage, role, None, plugin_args)
 
 
 def _apply_plugin_options(plugin_args):
@@ -114,6 +122,9 @@ def _get_execute_stage_and_roles(ctx, stage, role):
 
     if not role and not stage_role_configs.get(stage):
         _abort('No role defined in this stage.')
+
+    if stage and role and stage:
+        return [(stage, role)]
 
     if not role:
         comb = []

@@ -2,7 +2,7 @@
 
 from fabric.api import (
     runs_once, run, env, cd,
-    task, abort, show,
+    task, abort, show, prefix,
 )
 from fabric.contrib.files import exists
 
@@ -22,7 +22,6 @@ from . import signal
 def restart():
     signal.emit('deploy.restarting')
     signal.emit('deploy.restarted')
-    _run_command()
 
 
 @task
@@ -54,7 +53,6 @@ def release():
 
     green_alert('Finished')
     signal.emit('deploy.finished')
-    _run_command()
 
 
 @task
@@ -97,14 +95,36 @@ def rollback():
     green_alert('Finished')
     signal.emit('deploy.finished')
 
-    _run_command()
-
 @task
 @with_configs
 def once():
     green_alert('Running')
     _run_command()
     green_alert('Ran')
+
+
+@task
+@with_configs
+def shell():
+    with cd(env.current_path):
+        with show('output'):
+            _run_shell()
+
+
+def _run_shell():
+    if exists('venv/bin/activate'):
+        with prefix('source venv/bin/activate'):
+            if exists('manage.py'):
+                run('python manage.py shell')
+                return
+            elif exists('venv/bin/ipython'):
+                run('venv/bin/ipython')
+                return
+            elif exists('venv/bin/python'):
+                run('venv/bin/python')
+                return
+    else:
+        abort('Sorry, currently only support Python shell.')
 
 def _start_deploy():
     _check()
