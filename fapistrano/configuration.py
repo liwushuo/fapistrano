@@ -77,11 +77,14 @@ def apply_role_configurations_to_env(stage, role):
             config = env.stage_role_configs[stage][role]
             apply_configurations_to_env(config)
 
-def apply_yaml_to_env(confs):
+def apply_yaml_to_env(confs, operation):
+
     from .signal import clear
     clear()
 
-    for plugin in confs.get('plugins', []):
+    plugins = confs.get(operation + '_plugins') or confs.get('plugins') or []
+
+    for plugin in plugins:
         mod = import_module(plugin)
         mod.init()
 
