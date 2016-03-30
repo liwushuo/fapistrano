@@ -61,8 +61,8 @@ def restart(ctx, role, stage, plugin_args):
 @fap.command(context_settings=dict(
     ignore_unknown_options=True,
 ))
-@click.option('-r', '--role', help='deploy role, for example: production, staging')
-@click.option('-s', '--stage', help='deploy stage, for example: app, worker, cron')
+@click.option('-r', '--role', required=True, help='deploy role, for example: production, staging')
+@click.option('-s', '--stage', required=True, help='deploy stage, for example: app, worker, cron')
 @click.option('-c', '--command', help='run command')
 @click.argument('plugin_args', nargs=-1, type=click.UNPROCESSED)
 @click.pass_context
