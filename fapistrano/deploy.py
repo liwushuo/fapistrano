@@ -5,6 +5,7 @@ from fabric.api import (
     task, abort, show, prefix,
 )
 from fabric.contrib.files import exists, append
+from fabric.context_managers import shell_env
 
 from .utils import green_alert
 from .configuration import with_configs
@@ -99,17 +100,20 @@ def rollback():
 @with_configs
 def once():
     green_alert('Running')
-    _run_command()
+    with cd(env.current_path), shell_env(**env.environment), show('output'):
+        _run_command()
     green_alert('Ran')
 
 
 @task
 @with_configs
 def shell():
-    with cd(env.current_path):
-        with show('output'):
-            _run_shell()
+    with cd(env.current_path), shell_env(**env.environment), show('output'):
+        _run_shell()
 
+def _run_command():
+    if env.run_command:
+        run(env.run_command)
 
 def _run_shell():
     if exists('venv/bin/activate'):
@@ -137,6 +141,8 @@ def _write_env():
     for env_key, env_value in env.environment.items():
         line = '%s=%s' % (env_key, env_value)
         append(env.environment_file, line)
+    if not exists(env.environment_file):
+        run('touch %(environment_file)s' % env)
 
 def _check():
     run('mkdir -p %(path)s/{releases,shared/log}' % env)
@@ -182,9 +188,3 @@ def _cleanup():
         outdated_releases = get_outdated_releases()
         if outdated_releases:
             run('rm -rf %s' % ' '.join(outdated_releases))
-
-def _run_command():
-    if env.run_command:
-        with cd(env.current_path):
-            with show('output'):
-                run(env.run_command)
