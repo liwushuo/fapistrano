@@ -2,6 +2,14 @@
 History
 =======
 
+0.8.0
+------------------
+
+* add command `once`.
+* add command `shell` (only support python now).
+* find plugins for each command if possible, fallback to default plugin.
+* add `.env` file at remote.
+
 0.7.3
 ------------------
 
