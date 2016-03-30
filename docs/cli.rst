@@ -14,6 +14,8 @@ Fapistrano offers a default command-line tool: `fap`::
       release
       restart
       rollback
+      once
+      shell
 
 
 `fap release`
@@ -94,7 +96,7 @@ Example::
 `fap restart`
 -------------
 
-This command is designed to restart you application.
+This command is designed to restart your application.
 
 * Restart
     * Default behavious is blank.
@@ -106,3 +108,50 @@ Example::
     ===> Restarted
     Done.
     Disconnecting from server:2333... done.
+
+`fap shell`
+-----------
+
+This command is designed to start a REPL for your application.
+
+Both `--stage` and `--role` are required.
+
+NOTICE: currently only Python support::
+
+    $ fap shell --stage staging --role app
+    Executing app at staging
+    [server01] Executing task 'shell'
+    [server01] run: venv/bin/ipython
+    [server01] out: Python 2.7.10 (default, Jun 30 2015, 15:30:23)
+    [server01] out: Type "copyright", "credits" or "license" for more information.
+    [server01] out:
+    [server01] out: IPython 4.1.2 -- An enhanced Interactive Python.
+    [server01] out: ?         -> Introduction and overview of IPython's features.
+    [server01] out: %quickref -> Quick reference.
+    [server01] out: help      -> Python's own help system.
+    [server01] out: object?   -> Details about 'object', use 'object??' for extra details.
+    [server01] out:
+    [server01] out: In [1]: import os; print os.environ.get('ENV')
+    [server01] out: stag
+    [server01] out:
+    [server01] out: In [2]: exit
+    [server01] out:
+
+`fap once`
+----------
+
+This command is designed to run script for your application.
+
+Both `--stage` and `--role` are required.
+
+`fap once` needs additionaly option `--command`::
+
+    $ fap once --stage staging --role app --command='which scrapy'
+    Executing app at staging
+    [app-stag01] Executing task 'once'
+    ===> Running
+    [app-stag01] run: which scrapy
+    [app-stag01] out: venv/bin/scrapy
+    [app-stag01] out:
+
+    ===> Ran
