@@ -4,7 +4,7 @@ from fabric.api import (
     runs_once, run, env, cd,
     task, abort, show, prefix,
 )
-from fabric.contrib.files import exists
+from fabric.contrib.files import exists, append
 
 from .utils import green_alert
 from .configuration import with_configs
@@ -128,7 +128,15 @@ def _run_shell():
 
 def _start_deploy():
     _check()
+    _write_env()
     _symlink_shared_files()
+
+def _write_env():
+    if not env.environment:
+        return
+    for env_key, env_value in env.environment.items():
+        line = '%s=%s' % (env_key, env_value)
+        append(env.environment_file, line)
 
 def _check():
     run('mkdir -p %(path)s/{releases,shared/log}' % env)

@@ -52,6 +52,8 @@ def set_default_configurations(force=True):
     setdefault('shared_path', '%(path)s/shared', force)
     setdefault('new_release', datetime.now().strftime(RELEASE_PATH_FORMAT), force)
     setdefault('release_path', '%(releases_path)s/%(new_release)s', force)
+    setdefault('environment_file', '%(release_path)s/.env', force)
+    setdefault('environment', {}, force)
     setdefault('linked_files', [], force)
     setdefault('linked_dirs', [], force)
     setdefault('env_role_configs', {}, force)
