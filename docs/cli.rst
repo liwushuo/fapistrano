@@ -17,6 +17,10 @@ Fapistrano offers a default command-line tool: `fap`::
       once
       shell
 
+global options
+---------------
+
+* set `--dry-run=true` to debug the workflow but no task's really ran.
 
 `fap release`
 -------------

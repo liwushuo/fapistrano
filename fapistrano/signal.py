@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from functools import wraps
+from .utils import run_function
 
 class Signal(object):
 
@@ -26,7 +27,7 @@ def emit(event, **data):
     if event not in namespace:
         return
     for id, func in namespace[event].receivers.items():
-        func(**data)
+        run_function(func, **data)
 
 def register(event, function):
     assert callable(function), 'Function must be callable.'
@@ -40,6 +41,7 @@ def listen(event):
             return f(*args, **kwargs)
         return deco
     return decorator
+
 
 if __name__ == '__main__':
     def handle_hello(**data):

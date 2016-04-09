@@ -7,7 +7,7 @@ from fabric.api import (
 from fabric.contrib.files import exists, append
 from fabric.context_managers import shell_env
 
-from .utils import green_alert
+from .utils import green_alert, run_function
 from .configuration import with_configs
 from .directory import (
     get_current_release, get_previous_release,
@@ -30,7 +30,7 @@ def restart():
 def release():
     green_alert('Starting')
     signal.emit('deploy.starting')
-    _start_deploy()
+    run_function(_start_deploy)
 
     green_alert('Started')
     signal.emit('deploy.started')
@@ -43,14 +43,14 @@ def release():
 
     green_alert('Publishing')
     signal.emit('deploy.publishing')
-    _symlink_current()
+    run_function(_symlink_current)
 
     green_alert('Published')
     signal.emit('deploy.published')
 
     green_alert('Finishing')
     signal.emit('deploy.finishing')
-    _cleanup()
+    run_function(_cleanup)
 
     green_alert('Finished')
     signal.emit('deploy.finished')
@@ -71,7 +71,7 @@ def rollback():
     env.rollback_from = get_current_release()
     env.rollback_to = get_previous_release()
     env.release_path = '%(releases_path)s/%(rollback_to)s' % env
-    _check_rollback_to()
+    run_function(_check_rollback_to)
 
     green_alert('Started')
     signal.emit('deploy.started')
@@ -84,14 +84,14 @@ def rollback():
 
     green_alert('Publishing')
     signal.emit('deploy.publishing')
-    _symlink_current()
+    run_function(_symlink_current)
 
     green_alert('Published')
     signal.emit('deploy.published')
 
     green_alert('Finishing rollback')
     signal.emit('deploy.finishing_rollback')
-    _cleanup_rollback()
+    run_function(_cleanup_rollback)
 
     green_alert('Finished')
     signal.emit('deploy.finished')
@@ -101,7 +101,7 @@ def rollback():
 def once():
     green_alert('Running')
     with cd(env.current_path), shell_env(**env.environment), show('output'):
-        _run_command()
+        run_function(_run_command)
     green_alert('Ran')
 
 
@@ -109,7 +109,7 @@ def once():
 @with_configs
 def shell():
     with cd(env.current_path), shell_env(**env.environment), show('output'):
-        _run_shell()
+        run_function(_run_shell)
 
 def _run_command():
     if env.run_command:
@@ -129,6 +129,7 @@ def _run_shell():
                 return
     else:
         abort('Sorry, currently only support Python shell.')
+
 
 def _start_deploy():
     _check()

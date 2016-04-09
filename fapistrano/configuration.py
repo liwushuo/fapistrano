@@ -59,6 +59,7 @@ def set_default_configurations(force=True):
     setdefault('env_role_configs', {}, force)
     setdefault('keep_releases', 5, force)
     setdefault('stage_role_configs', {}, force)
+    setdefault('dry_run', False, force)
 
 def check_stage_and_role():
     stage = env.get('stage')
