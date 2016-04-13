@@ -9,26 +9,48 @@ from fabric.api import env, abort, show, hide
 
 def format_definition():
 
-    def _format(key, defs, cals):
-        if key in cals:
-            return cals[key]
-        elif not isinstance(defs[key], str):
-            cals[key] = defs[key]
-            return defs[key]
-        else:
-            keys = re.findall(r'%\(([^)]*)\)', defs[key])
-            ctx = {
-                k: _format(k, defs, cals)
-                for k in keys
-            }
-            cals[key] = defs[key] % ctx
-            return cals[key]
-
     defs = dict(env.items())
     cals = {}
 
+    def _apply_basic(val):
+        if not isinstance(val, str):
+            return val
+        keys = re.findall(r'%\(([^)]*)\)', val)
+        ctx = {
+            k: _format_basic(k)
+            for k in keys
+        }
+        return val % ctx
+
+    def _format_basic(key):
+        if key in cals:
+            return cals[key]
+        elif not isinstance(key, str):
+            cals[key] = defs[key]
+            return cals[key]
+        else:
+            cals[key] = _apply_basic(defs[key])
+            return cals[key]
+
+    def _format_structure(structure, key):
+        if isinstance(structure, str):
+            return _apply_basic(structure)
+        elif not isinstance(structure, (list, dict)):
+            return structure
+        elif isinstance(structure, list):
+            cals[key] = [_format_structure(elem, key) for elem in structure]
+            return cals[key]
+        else:
+            cals[key] = {k: _format_structure(structure[k], key) for k in structure}
+            return cals[key]
+
     for key in defs:
-         _format(key, defs, cals)
+        if isinstance(defs[key], (int, str, long, bool, )):
+            _format_basic(key)
+
+    for key in defs:
+        if isinstance(defs[key], (list, dict, )):
+            _format_structure(defs[key], key)
 
     return cals
 
