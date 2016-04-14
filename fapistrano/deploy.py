@@ -140,7 +140,7 @@ def _write_env():
     if not env.environment:
         return
     for env_key, env_value in env.environment.items():
-        line = '%s=%s' % (env_key, env_value)
+        line = 'export %s="%s"' % (env_key, env_value)
         append(env.environment_file, line)
     if not exists(env.environment_file):
         run('touch %(environment_file)s' % env)
