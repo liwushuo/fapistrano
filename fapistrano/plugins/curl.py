@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import sys
+from contextlib import contextmanager
+
 from fabric.api import cd, env, run, show, hide
 from .. import signal, configuration
 
@@ -23,18 +25,28 @@ class StreamFilter(object):
 
     def write(self,data):
         if not self.filter:
-            return
-        user = self.filter[:self.filter.index(':')]
-        data = data.replace(self.filter, '%s:**************' % user)
-        self.stream.write(data)
-        self.stream.flush()
+            self.stream.write(data)
+            self.stream.flush()
+        else:
+            user = self.filter[:self.filter.index(':')]
+            data = data.replace(self.filter, '%s:**************' % user)
+            self.stream.write(data)
+            self.stream.flush()
 
     def flush(self):
         self.stream.flush()
 
+@contextmanager
+def credential_output():
+    sys_stdout = sys.stdout
+    credential_stdout = StreamFilter(env.curl_user, sys_stdout)
+
+    sys.stdout = credential_stdout
+    yield
+    sys.stdout = sys_stdout
+
 def download_artifact(**kwargs):
-    with cd(env.release_path):
-        sys.stdout = StreamFilter(env.curl_user, sys.stdout)
+    with cd(env.release_path), credential_output():
         cmd = 'curl %(curl_url)s' % env
         if env.curl_user:
             cmd += ' --user %(curl_user)s' % env
