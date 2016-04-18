@@ -2,6 +2,13 @@
 History
 =======
 
+0.8.3
+------------------
+
+* fix missing output from curl.
+* fix .env format.
+* support formatted env for list/dict.
+
 0.8.2
 ------------------
 
@@ -10,7 +17,7 @@ History
 0.8.1
 ------------------
 
-* hide curl password
+* hide curl password.
 
 0.8.0
 ------------------
