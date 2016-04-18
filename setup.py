@@ -33,7 +33,7 @@ setup(
     platforms='any',
     author="Ju Lin",
     author_email='soasme@gmail.com',
-    url='https://github.com/soasme/fapistrano',
+    url='https://github.com/liwushuo/fapistrano',
     packages=find_packages(),
     package_dir={'fapistrano': 'fapistrano'},
     entry_points="""
