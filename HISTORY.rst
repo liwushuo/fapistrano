@@ -2,6 +2,11 @@
 History
 =======
 
+0.9.0
+------------------
+
+* support different login user and sudo user.
+
 0.8.3
 ------------------
 
