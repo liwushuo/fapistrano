@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from fabric.api import env, run, settings
+from fabric.api import env, run as fabrun, sudo, settings
 from fabric.colors import green, red, white, yellow
 
 
@@ -24,9 +24,10 @@ def run_function(function, **data):
     else:
         function(**data)
 
-def run_as(command, sudo='current'):
-    if sudo == 'current':
-        run(command % env)
+def run(command, sudo_user=None):
+    sudo_user = sudo_user or env.sudo_user
+    if not sudo_user or sudo_user == env.user:
+        fabrun(command % env)
     else:
-        with settings(sudo_user=sudo):
+        with settings(sudo_user=sudo_user):
             sudo(command % env)
