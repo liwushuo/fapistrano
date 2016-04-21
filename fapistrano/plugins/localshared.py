@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 
-from fabric.api import env, run
+from fabric.api import env
 from fabric.contrib.files import exists
 from .. import signal, configuration, directory
-from ..utils import red_alert
+from ..utils import red_alert, run
 
 def init():
     configuration.setdefault('localshared_source', '')

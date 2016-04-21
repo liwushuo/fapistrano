@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from fabric.api import run, env, prefix, cd
+from fabric.api import env, prefix, cd
 from fabric.contrib.files import exists
 from .. import signal, configuration
+from ..utils import run
 
 def init():
     configuration.setdefault('virtualenvwrapper_source', '/usr/local/bin/virtualenvwrapper.sh')

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from fabric.api import env, run, cd, show
+from fabric.api import env, cd, show
 from .. import signal, configuration
+from ..utils import run
 
 def init():
     configuration.setdefault('virtualenvtools_strategy', 'update-path')

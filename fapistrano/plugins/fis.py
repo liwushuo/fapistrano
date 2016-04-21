@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from fabric.api import show, run, env, cd, show, hide
+from fabric.api import show, env, cd, show, hide
 
 from .. import signal, configuration
+from ..utils import run
 
 def init():
     configuration.setdefault('fis_output', False)

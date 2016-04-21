@@ -3,8 +3,9 @@
 import sys
 from contextlib import contextmanager
 
-from fabric.api import cd, env, run, show, hide
+from fabric.api import cd, env, show, hide
 from .. import signal, configuration
+from ..utils import run
 
 def init():
     configuration.setdefault('curl_url', '')

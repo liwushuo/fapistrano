@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from fabric.api import (
-    runs_once, run, env, cd,
+    runs_once, env, cd,
     task, abort, show, prefix,
 )
 from fabric.contrib.files import exists, append
 from fabric.context_managers import shell_env
 
-from .utils import green_alert, run_function
+from .utils import green_alert, run_function, run
 from .configuration import with_configs
 from .directory import (
     get_current_release, get_previous_release,
@@ -140,8 +140,8 @@ def _write_env():
     if not env.environment:
         return
     for env_key, env_value in env.environment.items():
-        line = 'export %s="%s"' % (env_key, env_value)
-        append(env.environment_file, line)
+        env.env_line = 'export %s="%s"' % (env_key, env_value)
+        run("echo '%(env_line)s' >> $(echo '%(environment_file)s')" % env)
     if not exists(env.environment_file):
         run('touch %(environment_file)s' % env)
 

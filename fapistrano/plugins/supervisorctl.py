@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from fabric.api import env, run, show, hide, abort
+from fabric.api import env, show, hide, abort
 from fabric.contrib.files import exists
 from .. import signal, configuration
+from ..utils import run
 
 def init():
     configuration.setdefault('supervisor_restart', True)

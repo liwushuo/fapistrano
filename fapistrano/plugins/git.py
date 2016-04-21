@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from fabric.api import cd, env, run, local, task, abort
+from fabric.api import cd, env, local, task, abort
 from fabric.contrib.files import exists
 
-from ..utils import green_alert, red_alert, yellow_alert
+from ..utils import green_alert, red_alert, yellow_alert, run
 from .. import signal, configuration
 
 def init():
