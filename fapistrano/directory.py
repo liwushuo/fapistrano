@@ -84,20 +84,15 @@ def get_keep_releases_count():
         env.keep_releases = 5
     return env.keep_releases
 
-def set_outdated_releases():
+def get_outdated_releases():
     all_releases = get_all_releases()
     keep_releases_count = get_keep_releases_count()
     if len(all_releases) > keep_releases_count:
         directories = list(reversed(env.releases))
         del directories[:env.keep_releases]
-        env.outdated_releases = directories
+        return directories
     else:
-        env.outdated_releases = []
-
-def get_outdated_releases():
-    if not hasattr(env, 'outdated_releases'):
-        set_outdated_releases()
-    return env.outdated_releases
+        return []
 
 def set_linked_files():
     env.linked_files = []
