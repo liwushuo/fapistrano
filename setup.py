@@ -23,7 +23,7 @@ test_requirements = [
 
 setup(
     name='fapistrano',
-    version='0.9.0',
+    version='0.9.1',
     license='MIT',
     description="A remote server automation and deployment tool.",
     long_description=readme + '\n\n' + history,
