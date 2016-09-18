@@ -2,6 +2,11 @@
 History
 =======
 
+0.9.1
+------------------
+
+* fix stale releases left on servers.
+
 0.9.0
 ------------------
 
