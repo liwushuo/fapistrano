@@ -48,7 +48,7 @@ def credential_output():
 
 def download_artifact(**kwargs):
     with cd(env.release_path), credential_output():
-        cmd = 'curl %(curl_url)s' % env
+        cmd = 'curl --max-time 30 --retry 3 %(curl_url)s' % env
         if env.curl_user:
             cmd += ' --user %(curl_user)s' % env
         if env.curl_output:
