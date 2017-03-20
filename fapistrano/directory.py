@@ -91,7 +91,7 @@ def get_outdated_releases():
     all_releases = _get_all_releases()
     keep_releases_count = get_keep_releases_count()
     if len(all_releases) > keep_releases_count:
-        directories = list(reversed(env.releases))
+        directories = list(reversed(all_releases))
         del directories[:env.keep_releases]
         return directories
     else:
