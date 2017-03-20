@@ -37,8 +37,11 @@ def get_current_path():
         set_current_path()
     return env.current_path
 
+def _get_all_releases():
+    return sorted(run('ls -x %(releases_path)s' % env).split())
+
 def set_all_releases():
-    env.releases = sorted(run('ls -x %(releases_path)s' % env).split())
+    env.releases = _get_all_releases()
 
 def get_all_releases():
     if not hasattr(env, 'releases'):
@@ -85,7 +88,7 @@ def get_keep_releases_count():
     return env.keep_releases
 
 def get_outdated_releases():
-    all_releases = get_all_releases()
+    all_releases = _get_all_releases()
     keep_releases_count = get_keep_releases_count()
     if len(all_releases) > keep_releases_count:
         directories = list(reversed(env.releases))
